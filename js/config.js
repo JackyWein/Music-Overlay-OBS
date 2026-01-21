@@ -60,21 +60,21 @@ const RECONNECT_DELAY = 5000;
 // OVERLAY-VERHALTEN
 // ============================================
 // Zeit bis die Pills sich verstecken (in ms) - Compact-Modus
-const AUTO_HIDE_DURATION = 3000;
+const AUTO_HIDE_DURATION = 12000;
 
 // Widget komplett verstecken wenn Musik stoppt/pausiert
-const HIDE_ON_STOP = false;
+const HIDE_ON_STOP = true;
 
 // Zeit bis das Widget nach Pause/Stop komplett verschwindet (in ms)
-const HIDE_ON_STOP_DELAY = 10000;
+const HIDE_ON_STOP_DELAY = 20000;
 
 // Widget auch verstecken während Musik läuft (erscheint wieder bei !song)
 // Wenn true: Widget verschwindet komplett nach AUTO_HIDE_WHILE_PLAYING_DELAY
 // Wenn false: Widget bleibt sichtbar (im Compact-Modus) solange Musik läuft
-const AUTO_HIDE_WHILE_PLAYING = true;
+const AUTO_HIDE_WHILE_PLAYING = false;
 
 // Zeit bis das Widget bei laufender Musik komplett verschwindet (in ms)
-const AUTO_HIDE_WHILE_PLAYING_DELAY = 5000;  // 60 Sekunden
+const AUTO_HIDE_WHILE_PLAYING_DELAY = 60000;  // 60 Sekunden
 
 // Widget komplett verstecken (manueller Override)
 // Setzt auf true um das Overlay komplett auszublenden, auch wenn Musik läuft
