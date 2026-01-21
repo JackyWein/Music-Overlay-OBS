@@ -382,11 +382,6 @@ Music-Overlay/
 
 ---
 
-## 🆘 Support
-
-Probleme oder Fragen? Erstelle ein Issue auf GitHub oder kontaktiere mich!
-
----
 
 ## 📄 Lizenz
 
