@@ -1,0 +1,124 @@
+/* ========== Physics Animation ========== */
+#particle-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 600px;
+    /* Wide enough to start off-screen */
+    height: 100px;
+    pointer-events: none;
+    z-index: 20;
+    /* Above everything */
+    overflow: visible;
+}
+
+.particle {
+    position: absolute;
+    top: 50%;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: white;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 255, 255, 0.4);
+    opacity: 0;
+    transform: translateY(-50%);
+}
+
+#particle-left {
+    left: -50px;
+    /* Start off-screen left */
+}
+
+#particle-right {
+    right: -50px;
+    /* Start off-screen right */
+}
+
+.particle.shoot-left {
+    animation: shoot-in-left 0.6s cubic-bezier(0.1, 0.8, 0.2, 1) forwards;
+}
+
+.particle.shoot-right {
+    animation: shoot-in-right 0.6s cubic-bezier(0.1, 0.8, 0.2, 1) forwards;
+}
+
+@keyframes shoot-in-left {
+    0% {
+        left: -100px;
+        opacity: 1;
+        transform: translateY(-50%) scale(1);
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+    90% {
+        transform: translateY(-50%) scale(1.2);
+    }
+
+    /* Strtech before impact */
+    100% {
+        left: 50%;
+        opacity: 1;
+        transform: translateY(-50%) scale(0.5);
+    }
+
+    /* Impact center */
+}
+
+@keyframes shoot-in-right {
+    0% {
+        right: -100px;
+        opacity: 1;
+        transform: translateY(-50%) scale(1);
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+    90% {
+        transform: translateY(-50%) scale(1.2);
+    }
+
+    100% {
+        right: 50%;
+        opacity: 1;
+        transform: translateY(-50%) scale(0.5);
+    }
+}
+
+.explosion {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0) 70%);
+    opacity: 0;
+    z-index: 21;
+}
+
+.explosion.bang {
+    animation: big-bang 0.4s ease-out forwards;
+}
+
+@keyframes big-bang {
+    0% {
+        transform: translate(-50%, -50%) scale(0.1);
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.8;
+    }
+
+    100% {
+        transform: translate(-50%, -50%) scale(2.5);
+        opacity: 0;
+    }
+}

@@ -1,0 +1,49 @@
+/* ========== ENTRY: PORTAL ZOOM ========== */
+/* Circular reveal like a sci-fi portal opening */
+
+/* Exit Animation (implode) */
+.exit-portal {
+    animation: portal-close 0.5s ease-in forwards;
+}
+
+@keyframes portal-close {
+    0% {
+        clip-path: circle(50% at 50% 50%);
+        transform: scale(1) rotate(0deg);
+    }
+
+    100% {
+        clip-path: circle(0% at 50% 50%);
+        transform: scale(0) rotate(180deg);
+    }
+}
+
+/* Entry Animation (explode/open) */
+.entry-portal {
+    animation: portal-open 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes portal-open {
+    0% {
+        clip-path: circle(0% at 50% 50%);
+        transform: scale(0) rotate(-90deg);
+        filter: brightness(2) drop-shadow(0 0 20px white);
+    }
+
+    40% {
+        clip-path: circle(30% at 50% 50%);
+        transform: scale(0.8) rotate(10deg);
+        filter: brightness(1.5) drop-shadow(0 0 40px var(--album-glow-color, cyan));
+    }
+
+    70% {
+        transform: scale(1.1) rotate(-5deg);
+        filter: brightness(1.2);
+    }
+
+    100% {
+        clip-path: circle(50% at 50% 50%);
+        transform: scale(1) rotate(0deg);
+        filter: none;
+    }
+}

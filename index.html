@@ -5,19 +5,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Music Overlay</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="css/main.css">
 </head>
 
 <body>
 
     <div id="widget-wrapper">
+        <div id="god-rays"></div>
+        <div id="flash-overlay"></div>
+        <div id="shockwave-container"></div>
         <div id="music-widget">
+            <!-- Shooting Particles (inside widget for relative positioning) -->
+            <div id="particle-left" class="particle"></div>
+            <div id="particle-right" class="particle"></div>
+
             <!-- Linke Pille: Playtime + Album -->
             <div id="left-pill" class="pill">
                 <span id="playtime">0:00 / 0:00</span>
                 <div id="album-container">
-                    <div id="album-marquee">
-                        <span id="album">Album</span>
+                    <div id="album-marquee" class="marquee-container">
+                        <span id="album" class="track-album">Album</span>
                     </div>
                 </div>
             </div>
@@ -30,29 +37,84 @@
                         <!-- Dynamisch generiert -->
                     </svg>
                 </div>
-                <div id="cover-wrapper" class="spinning">
-                    <img id="cover" src="" alt="Cover" />
+                <div id="cover-wrapper">
+                    <!-- spinning class moved to img -->
+                    <img id="cover" class="spinning" src="" alt="Cover" />
                     <span id="cover-placeholder" class="placeholder-icon">🎵</span>
+                </div>
+                <!-- Mini Equalizer (shows when compact) -->
+                <div id="mini-equalizer">
+                    <div class="eq-bar"></div>
+                    <div class="eq-bar"></div>
+                    <div class="eq-bar"></div>
+                    <div class="eq-bar"></div>
                 </div>
             </div>
 
             <!-- Rechte Pille: Titel + Artist -->
             <div id="right-pill" class="pill">
                 <div id="title-container">
-                    <div id="title-marquee">
-                        <span id="title">Waiting for music...</span>
+                    <div id="title-marquee" class="marquee-container">
+                        <span id="title" class="track-title">Waiting for music...</span>
                     </div>
                 </div>
                 <div id="artist-container">
-                    <div id="artist-marquee">
-                        <span id="artist">Artist</span>
+                    <div id="artist-marquee" class="marquee-container">
+                        <span id="artist" class="track-artist">Artist</span>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <!-- Test Buttons (hidden in OBS) -->
+    <div id="test-controls" style="position: fixed; bottom: 20px; left: 20px; z-index: 9999; display: none; gap: 10px;">
+        <button onclick="testAnimation(triggerEntrySuperNova)"
+            style="padding: 10px 15px; background: #ef4444; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">🌟
+            Supernova</button>
+        <button onclick="testAnimation(triggerEntryDiscSwap)"
+            style="padding: 10px 15px; background: #3b82f6; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">💿
+            Disc Swap</button>
+        <button onclick="testAnimation(triggerEntryLiquid)"
+            style="padding: 10px 15px; background: #a855f7; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">💧
+            Liquid</button>
+        <button onclick="testAnimation(triggerEntryFlip)"
+            style="padding: 10px 15px; background: #22c55e; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">🪙
+            3D Flip</button>
+        <button onclick="testAnimation(triggerEntryGlitch)"
+            style="padding: 10px 15px; background: #db2777; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">👾
+            Glitch</button>
+        <button onclick="testAnimation(triggerEntryPortal)"
+            style="padding: 10px 15px; background: #0891b2; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">🌀
+            Portal</button>
+        <button onclick="testAnimation(triggerEntryCyber)"
+            style="padding: 10px 15px; background: #0ea5e9; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; border: 1px solid cyan; box-shadow: 0 0 5px cyan;">🤖
+            Cyber</button>
+        <button onclick="testAnimation(triggerEntryNebula)"
+            style="padding: 10px 15px; background: #8b5cf6; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; border: 1px solid violet;">🌌
+            Nebula</button>
+        <button onclick="testAnimation(triggerEntryCrystal)"
+            style="padding: 10px 15px; background: #fff; color: #333; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; border: 1px solid #ccc;">💎
+            Crystal</button>
+        <button onclick="testAnimation(triggerEntrySpin)"
+            style="padding: 10px 15px; background: #14b8a6; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; box-shadow: 0 0 5px teal;">💫
+            Spin</button>
+        <button onclick="testAnimation(triggerRandomEntry)"
+            style="padding: 10px 15px; background: #f97316; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">🎲
+            Random</button>
+    </div>
+
+    <!-- Ordered Standard Scripts (No Modules for Local File Support) -->
+    <script src="js/config.js"></script>
+    <script src="js/dom.js"></script>
+    <script src="js/state.js"></script>
+    <script src="js/utils/colors.js"></script>
+    <script src="js/utils/helpers.js"></script>
+    <script src="js/utils/debug.js"></script>
+    <script src="js/features/animation.js"></script>
+    <script src="js/features/ui.js"></script>
+    <script src="js/services/websocket.js"></script>
+    <script src="js/main.js"></script>
 </body>
 
 </html>

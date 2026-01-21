@@ -1,0 +1,89 @@
+/* ========== ENTRY: NEBULA IMPLOSION ========== */
+
+/* Exit: Nebula Vaporize */
+.exit-nebula {
+    animation: nebula-vaporize 1s ease-in forwards;
+}
+
+@keyframes nebula-vaporize {
+    0% {
+        transform: scale(1) rotate(0deg);
+        filter: none;
+        opacity: 1;
+    }
+
+    40% {
+        transform: scale(1.1) rotate(10deg);
+        filter: blur(5px) saturate(200%);
+    }
+
+    100% {
+        transform: scale(2) rotate(45deg);
+        filter: blur(20px) brightness(0);
+        opacity: 0;
+    }
+}
+
+/* Entry: Nebula Implosion */
+.entry-nebula {
+    animation: nebula-birth 1.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    transform-origin: center;
+}
+
+@keyframes nebula-birth {
+    0% {
+        opacity: 0;
+        transform: scale(3);
+        filter: blur(30px) hue-rotate(180deg) saturate(300%);
+    }
+
+    40% {
+        opacity: 1;
+        transform: scale(0.5);
+        /* Implode in */
+        filter: blur(10px) hue-rotate(90deg) contrast(150%);
+    }
+
+    70% {
+        transform: scale(1.1);
+        /* Bounce out */
+        filter: blur(2px) contrast(120%);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1);
+        filter: none;
+    }
+}
+
+/* Nebula Cloud Particles */
+.nebula-cloud {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(20px);
+    opacity: 0;
+    pointer-events: none;
+    mix-blend-mode: screen;
+}
+
+.nebula-cloud.active {
+    animation: nebula-swirl 1.2s ease-out forwards;
+}
+
+@keyframes nebula-swirl {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(2) rotate(0deg);
+    }
+
+    50% {
+        opacity: 0.8;
+        transform: translate(-50%, -50%) scale(0.5) rotate(180deg);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0) rotate(360deg);
+    }
+}

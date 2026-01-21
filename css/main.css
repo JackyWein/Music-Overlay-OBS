@@ -1,0 +1,15 @@
+@import 'layout.css';
+@import 'components.css';
+
+/* Animation Modules */
+@import 'animations/base.css';
+@import 'animations/entry-supernova.css';
+@import 'animations/entry-disc-swap.css';
+@import 'animations/entry-liquid.css';
+@import 'animations/entry-flip.css';
+@import 'animations/entry-glitch.css';
+@import 'animations/entry-portal.css';
+@import 'animations/entry-cyber.css';
+@import 'animations/entry-nebula.css';
+@import 'animations/entry-crystal.css';
+@import 'animations/entry-spin.css';

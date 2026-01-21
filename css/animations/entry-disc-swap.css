@@ -1,0 +1,82 @@
+/* ========== ENTRY: DISC SWAP ========== */
+/* Old cover slides up, new cover slides in from bottom */
+
+/* Exit Animation (old cover goes UP) */
+.exit-disc-up {
+    animation: disc-slide-up 0.6s cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+@keyframes disc-slide-up {
+    0% {
+        transform: translateY(0) scale(1) rotate(0deg);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateY(-200%) scale(0.8) rotate(180deg);
+        opacity: 0;
+    }
+}
+
+/* Entry Animation (new cover from BOTTOM) */
+.entry-disc-swap {
+    animation: disc-slide-in 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes disc-slide-in {
+    0% {
+        transform: translateY(200%) scale(0.8) rotate(-180deg);
+        opacity: 0;
+        filter: blur(10px);
+    }
+
+    50% {
+        opacity: 1;
+        filter: blur(5px);
+    }
+
+    80% {
+        transform: translateY(-10%) scale(1.05) rotate(10deg);
+        filter: blur(0);
+    }
+
+    100% {
+        transform: translateY(0) scale(1) rotate(0deg);
+        opacity: 1;
+        filter: none;
+    }
+}
+
+/* Glow trail effect */
+.disc-glow-trail {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.6) 0%, transparent 70%);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.disc-glow-trail.active {
+    animation: glow-trail 0.8s ease-out forwards;
+}
+
+@keyframes glow-trail {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, 100%) scale(0.5);
+    }
+
+    30% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -100%) scale(1.5);
+    }
+}

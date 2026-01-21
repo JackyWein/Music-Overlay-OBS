@@ -1,0 +1,65 @@
+/* ========== ENTRY: SUPERNOVA ========== */
+/* Particle collision + invert ring + music notes explosion */
+
+/* Exit Animation: Implode */
+.exit-supernova {
+    animation: supernova-implode 0.5s ease-in forwards;
+}
+
+@keyframes supernova-implode {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(1.1);
+        filter: brightness(2);
+    }
+
+    100% {
+        transform: scale(0);
+        opacity: 0;
+        filter: brightness(3);
+    }
+}
+
+/* Cover Reform after Supernova - smoother, less extreme */
+.entry-supernova {
+    animation: supernova-reform 1.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes supernova-reform {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+        filter: blur(20px) brightness(3);
+    }
+
+    20% {
+        transform: scale(1.4);
+        opacity: 1;
+        filter: blur(8px) brightness(2);
+    }
+
+    40% {
+        transform: scale(0.8);
+        filter: blur(4px) brightness(1.5);
+    }
+
+    60% {
+        transform: scale(1.1);
+        filter: blur(2px);
+    }
+
+    80% {
+        transform: scale(0.95);
+        filter: blur(0);
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+        filter: none;
+    }
+}

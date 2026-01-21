@@ -1,0 +1,415 @@
+/* Main Widget Container */
+#music-widget {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 600px;
+    height: 150px;
+    opacity: 1;
+    /* Default visible to prevent bugs */
+    transition: opacity 1s ease;
+}
+
+#music-widget.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Wrapper for animation triggers */
+#cover-wrapper {
+    position: relative;
+    width: 90px;
+    height: 90px;
+    z-index: 20;
+    /* Default Transition */
+    transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+        opacity 0.3s ease,
+        filter 0.3s ease;
+    will-change: transform, opacity, filter;
+}
+
+/* VINYL HOLE (The Black Dot) */
+#cover-wrapper::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 16px;
+    height: 16px;
+    background: radial-gradient(circle, #000 30%, #222 100%);
+    border-radius: 50%;
+    z-index: 30;
+    pointer-events: none;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.8);
+}
+
+/* Center Cover Container (holds wrapper + ring) */
+#center-cover {
+    position: relative;
+    width: 90px;
+    height: 90px;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* When pills are retracted (End of song state), enlarge cover */
+#center-cover.compact {
+    transform: scale(1.3);
+}
+
+/* Cover Image */
+#cover {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    display: none;
+    /* JS toggles */
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    /* Default Shadow */
+    /* Spinning Logic separate from entry */
+}
+
+/* Dynamic Glow in Compact Mode (using variable from UI.js) */
+#center-cover.compact #cover {
+    box-shadow: 0 0 25px var(--album-glow-color, rgba(0, 0, 0, 0.5));
+}
+
+#cover.spinning {
+    animation: spin-record 10s linear infinite;
+}
+
+#cover.paused {
+    animation-play-state: paused;
+    filter: grayscale(100%) brightness(0.7);
+}
+
+@keyframes spin-record {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Placeholder */
+#cover-placeholder {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #333, #111);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+}
+
+/* Pills Container Context */
+#pill-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    height: 100%;
+    /* Size determined by center-cover, pills are absolute */
+    overflow: visible;
+}
+
+/* Pills */
+.pill {
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(50px) saturate(220%);
+    -webkit-backdrop-filter: blur(50px) saturate(220%);
+    background-image: linear-gradient(145deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.05) 100%);
+    border: none;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35), inset 0 0 20px rgba(255, 255, 255, 0.05), 0 10px 40px rgba(0, 0, 0, 0.4);
+    padding: 12px 22px;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 65px;
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.5s ease;
+    opacity: 1;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 5;
+    white-space: nowrap;
+}
+
+.pill.retracted {
+    max-width: 0 !important;
+    min-width: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    opacity: 0;
+    border: none;
+}
+
+#left-pill {
+    border-radius: 32px 0 0 32px;
+    padding-right: 50px;
+    /* Overlap with cover (45px radius) */
+    right: 50%;
+    min-width: 100px;
+    align-items: flex-end;
+    border-right: none;
+    overflow: hidden;
+}
+
+#right-pill {
+    border-radius: 0 32px 32px 0;
+    padding-left: 50px;
+    /* Overlap with cover (45px radius) */
+    left: 50%;
+    min-width: 180px;
+    max-width: 250px;
+    align-items: flex-start;
+    border-left: none;
+    overflow: hidden;
+}
+
+/* Progress Ring */
+#progress-ring-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 140px;
+    height: 140px;
+    pointer-events: none;
+    z-index: 25;
+}
+
+svg#progress-ring {
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.5));
+}
+
+.progress-track {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.1);
+    stroke-width: 4;
+}
+
+.progress-bar {
+    fill: none;
+    stroke: #ec4899;
+    /* Default pink fallback */
+    stroke-width: 4;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s linear;
+}
+
+.progress-dot {
+    fill: #ec4899;
+    filter: drop-shadow(0 0 5px #ec4899);
+}
+
+/* Text Styles */
+#title-container,
+#artist-container,
+#album-container {
+    overflow: hidden;
+    max-width: 100%;
+    white-space: nowrap;
+    min-height: 18px;
+    /* Prevent collapse */
+    display: flex;
+    /* Ensure block model works well */
+    align-items: center;
+}
+
+.track-title {
+    font-weight: 800;
+    font-size: 14px;
+    /* Default Size */
+    letter-spacing: 0.5px;
+    display: inline-block;
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.track-artist,
+.track-album {
+    font-weight: 600;
+    /* Bolder */
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.9);
+    /* Brighter */
+    display: inline-block;
+    margin-top: 2px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    /* Add shadow for depth */
+}
+
+#playtime {
+    /* Same font family as rest */
+    font-variant-numeric: tabular-nums;
+    font-size: 13px;
+    color: #ec4899;
+    font-weight: 800;
+    /* Bold */
+    display: block;
+    margin-bottom: 2px;
+    text-shadow: 0 0 2px rgba(0, 0, 0, 0.8);
+}
+
+/* Marquee Effect */
+.marquee-container {
+    white-space: nowrap;
+    overflow: hidden;
+    display: block;
+    width: fit-content;
+    /* Critical: Ensure width matches content for measurement */
+    max-width: 100%;
+}
+
+.marquee-container.scrolling {
+    mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
+}
+
+/* Seamless Loop Logic: Container moves, spans are static layout */
+.scrolling {
+    display: flex !important;
+    width: max-content;
+    /* Force width to fit both copies */
+    max-width: none;
+    /* Allow growing beyond parent */
+    overflow: visible;
+    /* Don't clip the clone */
+    animation: marquee 10s linear infinite;
+}
+
+#artist-marquee.scrolling,
+#title-marquee.scrolling {
+    animation-duration: 12s;
+    /* Mask only the RIGHT side (end of pill), keep Left (Cover side) solid */
+    mask-image: linear-gradient(to right, black 0%, black 95%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, black 0%, black 95%, transparent 100%);
+}
+
+#artist-marquee.scrolling {
+    animation-duration: 15s;
+    /* Override speed */
+}
+
+#album-marquee.scrolling {
+    animation-duration: 10s;
+    /* Mask only the LEFT side (end of pill), keep Right (Cover side) solid */
+    mask-image: linear-gradient(to right, transparent 0%, black 5%, black 100%);
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 5%, black 100%);
+}
+
+.scrolling span {
+    display: inline-block;
+    padding-right: 50px;
+    /* Gap between seamless copies */
+}
+
+@keyframes marquee {
+    0% {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateX(-50%);
+    }
+
+    /* Move exactly 50% (one copy width) */
+}
+
+/* Mini Equalizer */
+#mini-equalizer {
+    position: absolute;
+    bottom: -18px;
+    /* Slightly lower */
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 4px;
+    /* More breathing room */
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    z-index: 50;
+    align-items: flex-start;
+    /* Grow downwards */
+}
+
+#center-cover.compact #mini-equalizer {
+    opacity: 1;
+    /* Show ONLY in compact mode */
+}
+
+/* Hide equalizer during ANY entry/exit animation (override compact) */
+#cover-wrapper.is-animating~#mini-equalizer {
+    opacity: 0 !important;
+    transition: opacity 0.2s ease;
+}
+
+.eq-bar {
+    width: 5px;
+    /* Slightly thicker */
+    height: 6px;
+    /* Start smaller */
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 2px;
+    /* Blocky but not sharp */
+    transform-origin: top;
+    animation: eq-bounce 0.8s ease-in-out infinite alternate;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    /* Subtle depth */
+}
+
+.eq-bar:nth-child(1) {
+    animation-delay: 0s;
+    height: 8px;
+}
+
+.eq-bar:nth-child(2) {
+    animation-delay: 0.2s;
+    height: 12px;
+}
+
+.eq-bar:nth-child(3) {
+    animation-delay: 0.4s;
+    height: 9px;
+}
+
+.eq-bar:nth-child(4) {
+    animation-delay: 0.1s;
+    height: 6px;
+}
+
+@keyframes eq-bounce {
+    0% {
+        transform: scaleY(0.5);
+        opacity: 0.8;
+    }
+
+    100% {
+        transform: scaleY(2.5);
+        opacity: 1;
+    }
+}
+
+/* Pause State for Equalizer */
+#center-cover.paused .eq-bar {
+    animation-play-state: paused;
+    transform: scaleY(1) !important;
+    opacity: 0.3;
+    transition: all 0.5s ease;
+}

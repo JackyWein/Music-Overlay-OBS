@@ -29,13 +29,26 @@ public class CPHInline
             long durationMs = (long)(durationSec * 1000);
             long positionMs = (long)(elapsedSec * 1000);
 
-            // isPaused Status (falls verfügbar)
+            // isPaused Status (Robust Check)
             bool isPaused = false;
+            
+            // 1. Check Explicit Pause Flag
             if (args.ContainsKey("ytm.isPaused"))
             {
-                // Versuche verschiedene Formate für Boolean
                 string pausedStr = args["ytm.isPaused"].ToString().ToLower();
                 isPaused = pausedStr == "true" || pausedStr == "1";
+            }
+            // 2. Fallback: Check Status String (Playing/Paused/Stopped)
+            else if (args.ContainsKey("ytm.status"))
+            {
+                string status = args["ytm.status"].ToString().ToLower();
+                isPaused = status != "playing"; // Paused if not playing
+            }
+            
+            // 3. Fallback: If no title, must be stopped
+            if (title == "Kein Titel" || string.IsNullOrEmpty(title))
+            {
+                isPaused = true;
             }
 
             // Anführungszeichen sauber escapen für JSON

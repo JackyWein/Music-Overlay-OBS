@@ -1,0 +1,720 @@
+/* ========== SINGULARITY OMEGA FX ========== */
+/* The Void: Implosion Phase */
+@keyframes singularity-implode {
+    0% {
+        transform: scale(1) rotate(0deg);
+        filter: contrast(100%) brightness(1);
+    }
+
+    50% {
+        transform: scale(0.5) rotate(720deg);
+        filter: contrast(200%) brightness(0.5) hue-rotate(90deg);
+    }
+
+    80% {
+        transform: scale(0.1) rotate(1440deg);
+        filter: contrast(500%) brightness(0);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(0.001) rotate(2000deg);
+        filter: contrast(1000%) brightness(0);
+        opacity: 0;
+    }
+}
+
+/* === SUPERNOVA INVERT RING (Cover-only) === */
+
+
+/* Invert ring - only over cover art */
+.invert-ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: white;
+    mix-blend-mode: difference;
+    pointer-events: none;
+    z-index: 100;
+    opacity: 0;
+}
+
+.invert-ring.active {
+    animation: invert-ring-pulse 1s ease-out forwards;
+}
+
+@keyframes invert-ring-pulse {
+    0% {
+        width: 60px;
+        height: 60px;
+        opacity: 1;
+    }
+
+    25% {
+        width: 100px;
+        height: 100px;
+        opacity: 1;
+    }
+
+    50% {
+        width: 110px;
+        height: 110px;
+        opacity: 0.8;
+    }
+
+    80% {
+        width: 95px;
+        height: 95px;
+        opacity: 0.4;
+    }
+
+    100% {
+        width: 80px;
+        height: 80px;
+        opacity: 0;
+    }
+}
+
+/* === MUSIC NOTE PARTICLES (Spiral Flight) === */
+.music-note-particle {
+    position: absolute;
+    opacity: 0;
+    transform: translate(-50%, -50%);
+    font-family: 'Segoe UI Emoji', 'Apple Color Emoji', sans-serif;
+    pointer-events: none;
+}
+
+.music-note-particle.spiral-fly {
+    animation: spiral-fly-out var(--duration, 1.5s) ease-out forwards;
+    animation-delay: var(--delay, 0ms);
+}
+
+@keyframes spiral-fly-out {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.5) rotate(0deg);
+    }
+
+    15% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1) rotate(45deg);
+    }
+
+    50% {
+        opacity: 1;
+        transform: translate(calc(-50% + var(--tx) * 0.6), calc(-50% + var(--ty) * 0.6)) scale(1.2) rotate(var(--rotation));
+    }
+
+    100% {
+        opacity: 0;
+        transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(0.3) rotate(var(--rotation));
+    }
+}
+
+/* The Bang: Explosion Phase */
+@keyframes big-bang-reform {
+    0% {
+        transform: scale(0) rotate(0deg);
+        opacity: 0;
+        filter: blur(50px) brightness(100) invert(1);
+    }
+
+    10% {
+        opacity: 1;
+        transform: scale(3);
+        /* Overshoot massive */
+        filter: blur(20px) brightness(50) invert(1);
+    }
+
+    30% {
+        transform: scale(0.5);
+        /* Recoil */
+        filter: blur(10px) brightness(5) invert(0);
+        box-shadow: 0 0 100px 50px white;
+    }
+
+    60% {
+        transform: scale(1.1);
+        filter: blur(2px) contrast(200%) hue-rotate(180deg);
+        box-shadow: 0 0 50px 20px rgba(59, 130, 246, 0.8);
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+        filter: none;
+        box-shadow: none;
+    }
+}
+
+/* Entry Animation 2: Flip In */
+@keyframes flip-in-reform {
+    0% {
+        transform: perspective(400px) rotateY(-90deg) scale(0.5);
+        opacity: 0;
+        filter: brightness(3);
+    }
+
+    40% {
+        transform: perspective(400px) rotateY(20deg) scale(1.1);
+        opacity: 1;
+    }
+
+    70% {
+        transform: perspective(400px) rotateY(-10deg) scale(0.95);
+    }
+
+    100% {
+        transform: perspective(400px) rotateY(0) scale(1);
+        filter: none;
+    }
+}
+
+/* Entry Animation 3: Drop Bounce */
+@keyframes drop-bounce-reform {
+    0% {
+        transform: translateY(-200px) scale(0.5);
+        opacity: 0;
+        filter: blur(20px);
+    }
+
+    30% {
+        transform: translateY(30px) scale(1.1);
+        opacity: 1;
+        filter: blur(5px);
+    }
+
+    50% {
+        transform: translateY(-15px) scale(0.95);
+        filter: blur(2px);
+    }
+
+    70% {
+        transform: translateY(8px) scale(1.02);
+    }
+
+    100% {
+        transform: translateY(0) scale(1);
+        filter: none;
+    }
+}
+
+/* Entry Animation 4: Spiral Zoom */
+@keyframes spiral-zoom-reform {
+    0% {
+        transform: scale(0) rotate(-360deg);
+        opacity: 0;
+        filter: blur(30px) hue-rotate(180deg);
+    }
+
+    30% {
+        transform: scale(1.5) rotate(45deg);
+        opacity: 1;
+        filter: blur(10px) hue-rotate(90deg);
+    }
+
+    60% {
+        transform: scale(0.8) rotate(-15deg);
+        filter: blur(3px) hue-rotate(45deg);
+    }
+
+    100% {
+        transform: scale(1) rotate(0);
+        filter: none;
+    }
+}
+
+/* Animation class variants */
+.reverse-snap {
+    animation: big-bang-reform 3s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+}
+
+.entry-flip {
+    animation: flip-in-reform 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.entry-drop {
+    animation: drop-bounce-reform 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.entry-spiral {
+    animation: spiral-zoom-reform 1.5s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+}
+
+/* Reality Destabilization (Screen Shake + Skew) */
+.reality-destabilize {
+    animation: reality-glitch 0.2s steps(2) infinite;
+}
+
+@keyframes reality-glitch {
+    0% {
+        transform: translate(2px, 2px) skew(0deg);
+        filter: invert(0);
+    }
+
+    20% {
+        transform: translate(-2px, -2px) skew(2deg);
+        filter: invert(0.2);
+    }
+
+    40% {
+        transform: translate(-2px, 2px) skew(0deg);
+        filter: invert(0);
+    }
+
+    60% {
+        transform: translate(2px, -2px) skew(-2deg);
+        filter: invert(0.8);
+    }
+
+    80% {
+        transform: translate(0, 0) skew(0deg);
+        filter: invert(0);
+    }
+
+    100% {
+        transform: translate(0, 0) skew(0deg);
+        filter: invert(1);
+    }
+}
+
+/* Void Particles (Suck In) */
+@keyframes void-suck {
+    0% {
+        transform: translate(var(--start-x), var(--start-y)) scale(1);
+        opacity: 0;
+    }
+
+    20% {
+        opacity: 1;
+    }
+
+    100% {
+        transform: translate(0, 0) scale(0);
+        opacity: 1;
+    }
+}
+
+/* ========== END SINGULARITY FX ========== */
+
+/* ========== Animations & FX ========== */
+
+/* Progress Glow */
+@keyframes pulse-glow {
+
+    0%,
+    100% {
+        filter: drop-shadow(0 0 4px rgba(59, 130, 246, 0.8));
+    }
+
+    50% {
+        filter: drop-shadow(0 0 10px rgba(59, 130, 246, 1)) drop-shadow(0 0 15px rgba(255, 255, 255, 0.5));
+    }
+}
+
+/* Cover Spin */
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Marquee Scroll */
+@keyframes marquee-scroll {
+    0% {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateX(-100%);
+    }
+}
+
+@keyframes marquee-scroll-slow {
+    0% {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateX(-100%);
+    }
+}
+
+/* Zoom Slam */
+.zoom-slam {
+    animation: slam-enter 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    transform-origin: center;
+}
+
+@keyframes slam-enter {
+    0% {
+        transform: scale(3);
+        opacity: 0;
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+    70% {
+        transform: scale(0.9);
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Invert Flash */
+.invert-flash {
+    animation: invert-hit 0.15s steps(2) forwards;
+}
+
+@keyframes invert-hit {
+    0% {
+        filter: invert(0);
+    }
+
+    50% {
+        filter: invert(1);
+    }
+
+    100% {
+        filter: invert(0);
+    }
+}
+
+/* Base Particles */
+#particle-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 9999;
+    overflow: visible;
+}
+
+.particle {
+    position: absolute;
+    top: 50%;
+    width: 20px;
+    height: 6px;
+    border-radius: 4px;
+    background: #fff;
+    box-shadow: 0 0 15px #fff, 0 0 30px #a1c4fd, 0 0 50px #c2e9fb;
+    opacity: 0;
+}
+
+#particle-left {
+    left: 0;
+    transform: translateY(-50%);
+}
+
+#particle-right {
+    right: 0;
+    transform: translateY(-50%);
+}
+
+.particle.shoot-left {
+    animation: shoot-in-left 0.5s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+}
+
+.particle.shoot-right {
+    animation: shoot-in-right 0.5s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+}
+
+@keyframes shoot-in-left {
+    0% {
+        left: -10vw;
+        width: 100px;
+        opacity: 0;
+    }
+
+    10% {
+        opacity: 1;
+    }
+
+    90% {
+        width: 20px;
+        opacity: 1;
+    }
+
+    100% {
+        left: 50%;
+        width: 10px;
+        opacity: 1;
+        transform: translate(-50%, -50%);
+    }
+}
+
+@keyframes shoot-in-right {
+    0% {
+        right: -10vw;
+        width: 100px;
+        opacity: 0;
+    }
+
+    10% {
+        opacity: 1;
+    }
+
+    90% {
+        width: 20px;
+        opacity: 1;
+    }
+
+    100% {
+        right: 50%;
+        width: 10px;
+        opacity: 1;
+        transform: translate(50%, -50%);
+    }
+}
+
+/* Dust Particles */
+.dust-particle {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 4px;
+    height: 4px;
+    background: white;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 21;
+    opacity: 1;
+    box-shadow: 0 0 6px rgba(255, 255, 255, 0.8);
+    transform: translate(-50%, -50%);
+}
+
+.dust-particle.exploding {
+    animation: dust-explode 0.8s ease-out forwards;
+}
+
+@keyframes dust-explode {
+    0% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(0);
+        opacity: 0;
+    }
+}
+
+/* Gravity Particles */
+.gravity-particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: #ffeb3b;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 20;
+    box-shadow: 0 0 6px orange;
+}
+
+.gravity-fall {
+    animation: spark-fall 1.5s ease-in forwards;
+}
+
+@keyframes spark-fall {
+    0% {
+        transform: translate(0, 0);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translate(var(--vx), 100vh);
+        opacity: 0;
+    }
+}
+
+
+/* ========== OMEGA FX ========== */
+.shake-screen {
+    animation: violent-shake 0.6s cubic-bezier(.36, .07, .19, .97) both;
+}
+
+@keyframes violent-shake {
+
+    0%,
+    100% {
+        transform: translate(0, 0) rotate(0deg);
+    }
+
+    10%,
+    30%,
+    50% {
+        transform: translate(-10px, -10px) rotate(-1deg);
+    }
+
+    20%,
+    40%,
+    60% {
+        transform: translate(10px, 10px) rotate(1deg);
+    }
+}
+
+#flash-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: white;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 100000;
+    mix-blend-mode: overlay;
+}
+
+.flash-now {
+    animation: strobe-flash 1.2s ease-out forwards;
+}
+
+@keyframes strobe-flash {
+
+    0%,
+    20% {
+        opacity: 1;
+    }
+
+    10%,
+    30% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+#god-rays {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    width: 250vw;
+    height: 250vw;
+    background: conic-gradient(from 0deg, transparent 0deg, white 5deg, transparent 10deg, white 25deg, transparent 50deg);
+    mask-image: radial-gradient(circle, transparent 5%, black 60%);
+    -webkit-mask-image: radial-gradient(circle, transparent 5%, black 60%);
+    opacity: 0;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.rays-spin {
+    animation: rays-appear-spin 4s ease-out forwards;
+}
+
+@keyframes rays-appear-spin {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0) rotate(0deg);
+    }
+
+    5% {
+        opacity: 0.8;
+        transform: translate(-50%, -50%) scale(1) rotate(45deg);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(1.5) rotate(220deg);
+    }
+}
+
+#shockwave-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 0;
+    height: 0;
+    z-index: 15;
+    pointer-events: none;
+}
+
+.shockwave {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    border: 5px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.5);
+    opacity: 0;
+}
+
+.shockwave.ripple {
+    animation: ripple-out 0.8s ease-out forwards;
+}
+
+@keyframes ripple-out {
+    0% {
+        width: 0;
+        height: 0;
+        opacity: 1;
+        border-width: 10px;
+    }
+
+    100% {
+        width: 150vw;
+        height: 150vw;
+        opacity: 0;
+        border-width: 0;
+    }
+}
+
+.reverse-snap {
+    animation: materialize-omega 3s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+    transform-origin: center;
+}
+
+@keyframes materialize-omega {
+    0% {
+        opacity: 0;
+        transform: scale(0);
+        filter: blur(50px) contrast(500%) brightness(20) hue-rotate(180deg) drop-shadow(0 0 100px white);
+        box-shadow: 20px 0 0 red, -20px 0 0 blue;
+    }
+
+    2% {
+        opacity: 1;
+        transform: scale(2.0);
+        filter: blur(20px) contrast(300%) brightness(5);
+        box-shadow: 10px 0 0 red, -10px 0 0 blue;
+    }
+
+    15% {
+        transform: scale(0.8);
+        filter: blur(10px) contrast(200%) brightness(2);
+        box-shadow: 5px 0 0 red, -5px 0 0 blue;
+    }
+
+    40% {
+        transform: scale(1.05);
+        filter: blur(2px) contrast(150%) brightness(1.2);
+    }
+
+    100% {
+        transform: scale(1);
+        filter: blur(0px) contrast(100%) brightness(1) hue-rotate(0deg);
+        box-shadow: 0 0 0 transparent;
+    }
+}

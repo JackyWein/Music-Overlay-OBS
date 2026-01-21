@@ -1,0 +1,93 @@
+/* ========== ENTRY: CYBER CONSTRUCT (REMASTERED) ========== */
+
+/* Exit: Digital Dissolve */
+.exit-cyber {
+    animation: cyber-dissolve 0.8s cubic-bezier(0.5, 0, 1, 1) forwards;
+}
+
+@keyframes cyber-dissolve {
+    0% {
+        clip-path: circle(50% at 50% 50%);
+        transform: scale(1);
+        filter: none;
+    }
+
+    10% {
+        clip-path: inset(10% 0 10% 0);
+        transform: translate(-2px, 2px) scale(1.02);
+        filter: hue-rotate(90deg) saturate(200%);
+    }
+
+    20% {
+        clip-path: inset(0 20% 0 20%);
+        transform: translate(2px, -2px) scale(0.98);
+        filter: invert(1);
+    }
+
+    30% {
+        /* Glitch pause */
+    }
+
+    100% {
+        clip-path: inset(50% 50% 50% 50%);
+        transform: scale(0);
+        opacity: 0;
+    }
+}
+
+/* Entry: Holographic Build */
+.entry-cyber {
+    animation: cyber-hologram 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    position: relative;
+    /* Create a stacking context */
+    z-index: 10;
+}
+
+@keyframes cyber-hologram {
+    0% {
+        opacity: 0;
+        transform: scale(0.8) translateY(20px);
+        filter: blur(10px) brightness(0) drop-shadow(0 0 10px cyan);
+        clip-path: polygon(0 100%, 100% 100%, 100% 100%, 0 100%);
+        /* Build from bottom */
+    }
+
+    20% {
+        opacity: 0.5;
+        clip-path: polygon(0 80%, 100% 80%, 100% 100%, 0 100%);
+        filter: blur(5px) brightness(2) hue-rotate(180deg);
+    }
+
+    40% {
+        opacity: 0.8;
+        transform: scale(1.05) translateY(-5px);
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+        /* Full height, glitchy */
+        filter: contrast(200%) drop-shadow(0 0 20px cyan);
+    }
+
+    50% {
+        transform: skewX(-10deg) scale(1.05);
+        /* Glitch skew */
+    }
+
+    55% {
+        transform: skewX(10deg) scale(1.05);
+    }
+
+    60% {
+        transform: scale(1);
+        filter: brightness(1.2);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1);
+        filter: none;
+        clip-path: circle(50% at 50% 50%);
+        /* Resolve to circle */
+    }
+}
+
+/* Scanline Overlay (Simulated via ::after on wrapper if supported or separate element) */
+/* Ideally we'd add a scanline div in JS, but we can try box-shadow tricks */
