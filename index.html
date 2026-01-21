@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Overlay</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+    <div id="widget-wrapper">
+        <div id="music-widget">
+            <!-- Linke Pille: Playtime + Album -->
+            <div id="left-pill" class="pill">
+                <span id="playtime">0:00 / 0:00</span>
+                <span id="album">Album</span>
+            </div>
+
+            <!-- Mitte: Cover mit Progress Ring -->
+            <div id="center-cover">
+                <!-- Progress Ring um das Cover -->
+                <div id="progress-ring-container">
+                    <svg id="progress-ring" viewBox="0 0 100 100">
+                        <!-- Dynamisch generiert -->
+                    </svg>
+                </div>
+                <div id="cover-wrapper" class="spinning">
+                    <img id="cover" src="" alt="Cover" />
+                    <span id="cover-placeholder" class="placeholder-icon">🎵</span>
+                </div>
+            </div>
+
+            <!-- Rechte Pille: Titel + Artist -->
+            <div id="right-pill" class="pill">
+                <div id="title-container">
+                    <div id="title-marquee">
+                        <span id="title">Waiting for music...</span>
+                    </div>
+                </div>
+                <span id="artist">Artist</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
