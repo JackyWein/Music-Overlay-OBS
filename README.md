@@ -19,13 +19,13 @@ Ein schönes, animiertes Musik-Overlay für deine Streams! Zeigt den aktuell spi
 
 | Ich nutze... | Dann installiere... |
 |--------------|---------------------|
-| **YouTube Music** | [th-ch YouTube Music App](#youtube-music-th-ch-empfohlen) (empfohlen) |
-| **YouTube Music** (Alternative) | [YouTube Music Desktop App](#youtube-music-desktop-app-alternative) |
-| **Spotify** | [Spicetify + WebNowPlaying](#spotify-setup) |
-| **Apple Music** | [Cider](#apple-music-cider-setup) |
-| **VLC Media Player** | [VLC HTTP Interface](#vlc-media-player-setup) |
-| **foobar2000** | [Beefweb Plugin](#foobar2000-setup) |
-| **Streamerbot** | [Streamerbot Setup](#streamerbot-setup) (für Fortgeschrittene) |
+| **YouTube Music** | [th-ch YouTube Music App](https://github.com/th-ch/youtube-music/releases) (empfohlen) |
+| **YouTube Music** (Alternative) | [YouTube Music Desktop App](https://ytmdesktop.app/) |
+| **Spotify** | [Spicetify](https://spicetify.app/docs/advanced/installation) + [WebNowPlaying](https://github.com/keifufu/WebNowPlaying-Redux-Spicetify) |
+| **Apple Music** | [Cider](https://cider.sh/) |
+| **VLC Media Player** | [VLC Media Player](https://www.videolan.org/vlc/) |
+| **foobar2000** | [foobar2000](https://www.foobar2000.org/) + [Beefweb](https://github.com/hyperion-project/beefweb) |
+| **Streamerbot** | [Streamer.bot](https://streamer.bot/) (für Fortgeschrittene) |
 
 > 💬 **Twitch Chat Support:** Egal welche Musikquelle - mit dem [Twitch Chat Setup](#twitch-chat-setup) können deine Zuschauer `!song` schreiben um den aktuellen Song zu sehen!
 
