@@ -9,7 +9,8 @@ const state = {
     isAnimating: false,
     localTimerInterval: null,
     pillHideTimer: null,
-    // NEW: Pause tracking for auto-hide
+    fullHideTimer: null,  // Timer für AUTO_HIDE_WHILE_PLAYING
+    // Pause tracking for auto-hide
     pauseStartTime: null,
     isWidgetHidden: false,
     pauseHideTimeout: null

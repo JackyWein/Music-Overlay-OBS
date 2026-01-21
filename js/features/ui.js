@@ -2,6 +2,13 @@
 // Depends on: dom.js, state.js, config.js, utils/*, animation.js
 
 function showWidget() {
+    // Check if widget should be force hidden
+    if (typeof FORCE_HIDDEN !== 'undefined' && FORCE_HIDDEN === true) {
+        widgetWrapper.classList.add('hiding');
+        widgetWrapper.classList.remove('visible');
+        return;
+    }
+
     widgetWrapper.classList.remove('hiding');
     widgetWrapper.classList.add('visible');
 
@@ -21,6 +28,8 @@ function showWidget() {
 function resetPillAutoHide() {
     // console.log("resetPillAutoHide called"); 
     if (state.pillHideTimer) clearTimeout(state.pillHideTimer);
+    if (state.fullHideTimer) clearTimeout(state.fullHideTimer);
+
     state.pillHideTimer = setTimeout(() => {
         if (leftPill && rightPill) {
             leftPill.classList.add('retracted');
@@ -40,8 +49,37 @@ function resetPillAutoHide() {
                     } catch (e) { /* Use default */ }
                 }
             }
+
+            // Start full hide timer if AUTO_HIDE_WHILE_PLAYING is enabled
+            if (typeof AUTO_HIDE_WHILE_PLAYING !== 'undefined' && AUTO_HIDE_WHILE_PLAYING === true) {
+                startFullHideWhilePlayingTimer();
+            }
         }
     }, AUTO_HIDE_DURATION);
+}
+
+// Timer für komplettes Verstecken während Musik läuft
+function startFullHideWhilePlayingTimer() {
+    if (state.fullHideTimer) clearTimeout(state.fullHideTimer);
+
+    const delay = (typeof AUTO_HIDE_WHILE_PLAYING_DELAY !== 'undefined')
+        ? AUTO_HIDE_WHILE_PLAYING_DELAY
+        : 60000;
+
+    state.fullHideTimer = setTimeout(() => {
+        if (state.isPlaying) {  // Nur verstecken wenn noch am Abspielen
+            hideWidget();
+            console.log("Widget hidden while playing (AUTO_HIDE_WHILE_PLAYING)");
+        }
+    }, delay);
+}
+
+// Timer abbrechen
+function cancelFullHideWhilePlayingTimer() {
+    if (state.fullHideTimer) {
+        clearTimeout(state.fullHideTimer);
+        state.fullHideTimer = null;
+    }
 }
 
 function updateWidget(data) {
@@ -100,6 +138,13 @@ function updateWidget(data) {
             if (coverWrapper) coverWrapper.classList.remove('spinning');
 
             const startEntrySequence = () => {
+                // Ensure widget is visible if currently hidden (e.g. from Auto-Hide)
+                if (state.isWidgetHidden) {
+                    state.isWidgetHidden = false;
+                    if (typeof widgetWrapper !== 'undefined') widgetWrapper.classList.remove('hidden');
+                    console.log("Widget unhidden for song change entry");
+                }
+
                 clearTimeout(safteyTimer);
 
                 if (USE_PHYSICS_ANIMATION) {
@@ -285,6 +330,9 @@ function updateContent(data) {
     }
 
     updateTimeDisplay();
+
+    // Ensure Progress Ring exists
+    if (typeof setupProgressRing === 'function') setupProgressRing();
     updateProgressRing(state.currentProgress);
 
     // Play State - Only pause if isPaused is EXPLICITLY true
@@ -312,7 +360,8 @@ function updateContent(data) {
         console.log("Forcing STOP/PAUSE due to empty title");
     }
 
-    // If no pause info, assume playing and keep timer running
+    // Check if status changed from Pause to Play (Resume)
+    const isResuming = state.isPlaying && !wasPlaying;
 
     // Handle pause state changes (State-Based, not just Transition)
     if (coverWrapper) {
@@ -328,7 +377,7 @@ function updateContent(data) {
             // Start hide timer if not running
             if (!state.pauseHideTimeout) startPauseHideTimer();
 
-            console.log("Music PAUSED State Enforced");
+            if (wasPlaying) console.log("Music PAUSED State Enforced");
         } else {
             // PLAYING
             coverImg.classList.remove('paused');
@@ -341,8 +390,17 @@ function updateContent(data) {
             }
 
             cancelPauseHideTimer();
+
+            // WICHTIGER FIX: Nur aufwecken wenn:
+            // 1. Wir kommen aus einer Pause (Resume) UND das Widget war versteckt
+            // 2. ODER es ist ein Command (z.B. Twitch !song)
+            const isCommand = data.trigger === 'command';
+
             if (state.isWidgetHidden) {
-                showWidgetWithEntry();
+                if (isResuming || isCommand) {
+                    showWidgetWithEntry();
+                    console.log("Widget waking up (Resume or Command)");
+                }
             }
         }
     }

@@ -12,6 +12,18 @@ function animEnd() {
 
 // ========== Progress Ring ==========
 function setupProgressRing() {
+    // Config Check
+    if (typeof SHOW_PROGRESS_RING !== 'undefined' && SHOW_PROGRESS_RING === false) {
+        if (progressRing) progressRing.style.display = 'none';
+        const container = document.getElementById('progress-ring-container');
+        if (container) container.style.display = 'none';
+        return;
+    } else {
+        if (progressRing) progressRing.style.display = ''; // Reset
+        const container = document.getElementById('progress-ring-container');
+        if (container) container.style.display = '';
+    }
+
     const size = 140;
     const center = size / 2;
     const radius = 46;
@@ -39,6 +51,8 @@ function setupProgressRing() {
 }
 
 function updateProgressRing(progress) {
+    if (typeof SHOW_PROGRESS_RING !== 'undefined' && SHOW_PROGRESS_RING === false) return;
+
     const progressPath = document.getElementById('progress-path');
     const progressDot = document.getElementById('progress-dot');
     if (!progressPath) return;
@@ -96,15 +110,24 @@ function updateTimeDisplay() {
 }
 
 // ========== Auto-Hide on Pause ==========
-const PAUSE_HIDE_DELAY = 60000; // 60 seconds
+// Diese Werte werden jetzt aus config.js gelesen:
+// - HIDE_ON_STOP: true/false - Widget komplett verstecken bei Stop/Pause
+// - HIDE_ON_STOP_DELAY: Zeit in ms bis zum Verstecken
 
 function startPauseHideTimer() {
+    // Nur verstecken wenn HIDE_ON_STOP aktiviert ist
+    if (typeof HIDE_ON_STOP === 'undefined' || HIDE_ON_STOP !== true) {
+        return; // Nicht verstecken - Standard-Verhalten
+    }
+
     if (state.pauseHideTimeout) clearTimeout(state.pauseHideTimeout);
+
+    const delay = (typeof HIDE_ON_STOP_DELAY !== 'undefined') ? HIDE_ON_STOP_DELAY : 10000;
 
     state.pauseStartTime = Date.now();
     state.pauseHideTimeout = setTimeout(() => {
         hideWidget();
-    }, PAUSE_HIDE_DELAY);
+    }, delay);
 }
 
 function cancelPauseHideTimer() {
@@ -137,6 +160,9 @@ function showWidgetWithEntry() {
     // Trigger full entry animation
     triggerPhysicsEntry(() => {
         console.log("Widget re-shown with entry animation");
+
+        // Ensure Progress Ring is setup
+        if (typeof setupProgressRing === 'function') setupProgressRing();
 
         // Show pills again after animation
         setTimeout(() => {
@@ -567,9 +593,20 @@ const ENTRY_ANIMATIONS = [
 function triggerRandomEntry(callback) {
     let choices = ENTRY_ANIMATIONS;
 
+    // Filter by User Config (ALLOWED_ANIMATIONS) if setup
+    if (typeof ALLOWED_ANIMATIONS !== 'undefined' && Array.isArray(ALLOWED_ANIMATIONS) && ALLOWED_ANIMATIONS.length > 0) {
+        // Filter whitelist
+        const allowed = ENTRY_ANIMATIONS.filter(anim => ALLOWED_ANIMATIONS.includes(anim.name));
+        if (allowed.length > 0) {
+            choices = allowed;
+        } else {
+            console.warn("ALLOWED_ANIMATIONS defined but no matches found. Using all animations.");
+        }
+    }
+
     // Filter repeat logic (max 2 same)
-    if (repeatCount >= 2) {
-        choices = ENTRY_ANIMATIONS.filter(a => a.name !== lastAnimationName);
+    if (repeatCount >= 2 && choices.length > 1) {
+        choices = choices.filter(a => a.name !== lastAnimationName);
     }
 
     const random = choices[Math.floor(Math.random() * choices.length)];
