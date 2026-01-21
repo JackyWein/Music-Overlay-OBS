@@ -12,10 +12,8 @@ const artistEl = document.getElementById('artist');
 const progressRing = document.getElementById('progress-ring');
 
 // ========== State ==========
-let hideTimer = null;
-let isVisible = false;
 let currentProgress = 0;
-const AUTO_HIDE_DELAY = 60000; // 60 Sekunden
+// AUTO_HIDE_DELAY removed
 
 // Lokaler Timer für Progress-Interpolation
 let localTimerInterval = null;
@@ -32,6 +30,10 @@ function setupProgressRing() {
     const circumference = 2 * Math.PI * radius;
 
     progressRing.setAttribute('viewBox', `0 0 ${size} ${size}`);
+
+    // Prevent re-creating elements if they already exist
+    if (document.getElementById('progress-path')) return;
+
     progressRing.innerHTML = `
         <circle class="progress-track" 
             cx="${center}" cy="${center}" r="${radius}" />
@@ -146,24 +148,12 @@ function checkMarquee() {
 }
 
 // ========== Show/Hide Widget ==========
+// ========== Show/Hide Widget ==========
+// ========== Show/Hide Widget ==========
 function showWidget() {
-    if (!isVisible) {
-        widgetWrapper.classList.remove('hiding');
-        widgetWrapper.classList.add('visible');
-        isVisible = true;
-
-        setTimeout(setupProgressRing, 100);
-    }
-
-    if (hideTimer) clearTimeout(hideTimer);
-    hideTimer = setTimeout(hideWidget, AUTO_HIDE_DELAY);
-}
-
-function hideWidget() {
-    widgetWrapper.classList.add('hiding');
-    widgetWrapper.classList.remove('visible');
-    isVisible = false;
-    stopLocalTimer();
+    widgetWrapper.classList.remove('hiding');
+    widgetWrapper.classList.add('visible');
+    setTimeout(setupProgressRing, 100);
 }
 
 // ========== Update Widget ==========
@@ -198,7 +188,12 @@ function updateWidget(data) {
             // Wait for exit to finish
             setTimeout(() => {
                 // 3. Update Content (Hidden)
-                updateContent(data);
+                try {
+                    updateContent(data);
+                } catch (e) {
+                    console.error("Error in updateContent during animation:", e);
+                }
+
                 lastSongId = currentSongId;
 
                 // 4. Prepare Entry (Move to bottom instantly)
@@ -217,6 +212,22 @@ function updateWidget(data) {
                     setTimeout(() => {
                         leftPill.classList.remove('retracted');
                         rightPill.classList.remove('retracted');
+
+                        // Re-check overflow once visible/expanded
+                        try {
+                            // Trigger a re-measure of text widths now that we are visible
+                            const evt = new CustomEvent('visibility-changed');
+                            window.dispatchEvent(evt); // or direct call if simple
+
+                            // Manual simple re-check
+                            if (titleMarquee.scrollWidth > titleContainer.clientWidth) titleMarquee.classList.add('scrolling'); /* title uses 'scrolling'? check CSS */
+                            /* Title CSS uses animation directly on #title-marquee w/ padding-left. NO specific class? 
+                               Wait, Title logic in updateContent uses 'scrolling' class remove? 
+                               Line 351: titleMarquee.classList.remove('scrolling');
+                               But CSS has '#title-marquee' animation by default?
+                               Let's check Title logic in a moment.
+                            */
+                        } catch (e) { }
 
                         // Start auto-hide timer after expanding
                         resetPillAutoHide();
@@ -269,7 +280,7 @@ function updateWidget(data) {
 
 // ========== Auto Hide Logic ==========
 let pillHideTimer = null; // This is for the pill auto-hide
-const autoHideDuration = 10000; // 10 Seconds
+const autoHideDuration = 30000; // 30 Seconds
 
 function resetPillAutoHide() {
     // Stop existing timer
@@ -293,13 +304,67 @@ function resetPillAutoHide() {
 function updateContent(data) {
     // Cover
     if (data.cover && data.cover.startsWith('http')) {
-        coverImg.src = data.cover;
-        coverImg.style.display = 'block';
-        coverPlaceholder.style.display = 'none';
-        // Reset animation on new img load? Browsers handle src change efficiently
+        // Only update if src changed to avoid unnecessary re-loading/flickering
+        if (coverImg.src !== data.cover) {
+            coverImg.crossOrigin = "Anonymous"; // Allow canvas access
+            coverImg.src = data.cover;
+            coverImg.style.display = 'block';
+            coverPlaceholder.style.display = 'none';
+
+            // Extract color when image loads
+            coverImg.onload = function () {
+                try {
+                    const dominantColor = getAverageColor(coverImg);
+                    // Apply to pills with transparency
+                    const leftPill = document.getElementById('left-pill');
+                    const rightPill = document.getElementById('right-pill');
+
+                    // 0.65 opacity for Gel Glass (vibrant color visibility)
+                    const bgColor = `rgba(${dominantColor.r}, ${dominantColor.g}, ${dominantColor.b}, 0.65)`;
+
+                    leftPill.style.backgroundColor = bgColor;
+                    rightPill.style.backgroundColor = bgColor;
+
+                    // Calculate Complementary Color using HSL
+                    const hsl = rgbToHsl(dominantColor.r, dominantColor.g, dominantColor.b);
+
+                    // Rotate Hue by 180 degrees for complementary color
+                    const compHue = (hsl.h + 180) % 360;
+
+                    // Boost Saturation/Lightness for readability/vibes
+                    // 100% Saturation, 70% Lightness usually pops well on dark/colored backgrounds
+                    const compColor = `hsl(${compHue}, 100%, 75%)`;
+
+                    // Apply Complementary Color
+                    // 1. Playtime Text
+                    if (playtimeEl) playtimeEl.style.color = compColor;
+
+                    // 2. Progress Bar (Stroke)
+                    const progressPath = document.getElementById('progress-path');
+                    if (progressPath) progressPath.style.stroke = compColor;
+
+                    // 3. Progress Dot
+                    const progressDot = document.getElementById('progress-dot');
+                    if (progressDot) {
+                        progressDot.style.fill = compColor;
+                        // Glow matching the complementary color
+                        progressDot.style.filter = `drop-shadow(0 0 8px ${compColor})`;
+                    }
+                } catch (e) {
+                    console.warn("Color extraction failed (CORS?):", e);
+                    // Fallback to default
+                    resetPillColors();
+                }
+            };
+
+            coverImg.onerror = function () {
+                resetPillColors();
+            }
+        }
     } else {
         coverImg.style.display = 'none';
         coverPlaceholder.style.display = 'block';
+        resetPillColors();
     }
 
     // Titel
@@ -309,7 +374,11 @@ function updateContent(data) {
     setTimeout(checkMarquee, 300);
 
     // Artist
-    artistEl.textContent = data.artist || 'Unknown Artist';
+    const newArtist = data.artist || 'Unknown Artist';
+    if (artistEl.textContent !== newArtist) {
+        artistEl.textContent = newArtist;
+        // Overflow check handled by checkOverflows()
+    }
 
     // Album
     albumEl.textContent = data.album || data.artist || '';
@@ -350,21 +419,89 @@ function updateContent(data) {
     const isPausedValue = data.isPaused === true || data.isPaused === 'true' || data.isPaused === 1;
     const isPlayingValue = data.isPlaying === true || data.isPlaying === 'true' || data.isPlaying === 1;
 
-    if (isPausedValue || data.isPlaying === false) {
-        coverWrapper.classList.add('paused');
-        isPlaying = false;
-        stopLocalTimer();
-    } else if (isPlayingValue || data.isPaused === false) {
-        coverWrapper.classList.remove('paused');
-        isPlaying = true;
-        startLocalTimer();
-    } else if (!localTimerInterval) {
-        isPlaying = true;
-        startLocalTimer();
-    }
+    // ... existing paused/playing logic ...
 
-    showWidget();
+    // Check overflows immediately if not animating (visible)
+    // If animating, checkOverflows() is called by updateWidget AFTER expansion
+    if (!isAnimating) {
+        setTimeout(checkOverflows, 50);
+    }
 }
+
+// ========== Overflow Checking Helper ==========
+function checkOverflows() {
+    // Title
+    try {
+        if (titleMarquee && titleContainer) {
+            // Logic for title (CSS based on ID?)
+            // The previous logic for Title was doing custom stuff. 
+            // We'll stick to class toggling 'scroll' matching Artist approach for consistency if CSS supports it
+            // NOTE: CSS for #title-marquee uses animation by default. 
+            // We need to verify if we want to toggle it.
+            // Current Title CSS: #title-marquee.no-scroll { padding-left: 0; animation: none; }
+            // So default IS scrolling. We add 'no-scroll' if it fits.
+
+            titleMarquee.classList.remove('no-scroll');
+            void titleMarquee.offsetWidth;
+            if (titleMarquee.scrollWidth <= titleContainer.clientWidth) {
+                titleMarquee.classList.add('no-scroll');
+            }
+        }
+    } catch (e) { console.error("checkOverflows Title Error:", e); }
+
+    // Artist
+    try {
+        const artistMarquee = document.getElementById('artist-marquee');
+        const artistContainer = document.getElementById('artist-container');
+        if (artistMarquee && artistContainer) {
+            artistMarquee.classList.remove('scroll');
+            void artistMarquee.offsetWidth;
+
+            // Allow measuring only if visible
+            if (artistContainer.clientWidth > 0) {
+                if (artistMarquee.scrollWidth > artistContainer.clientWidth) {
+                    artistMarquee.classList.add('scroll');
+                }
+            }
+        }
+    } catch (e) { console.error("checkOverflows Artist Error:", e); }
+
+    // Album
+    try {
+        const albumMarquee = document.getElementById('album-marquee');
+        const albumContainer = document.getElementById('album-container');
+        if (albumMarquee && albumContainer) {
+            albumMarquee.classList.remove('scroll');
+            void albumMarquee.offsetWidth;
+            if (albumContainer.clientWidth > 0) {
+                if (albumMarquee.scrollWidth > albumContainer.clientWidth) {
+                    albumMarquee.classList.add('scroll');
+                } else {
+                    // Ensure right alignment if not scrolling
+                    // CSS handles this via text-align: right on #album-marquee
+                }
+            }
+        }
+    } catch (e) { }
+}
+const isPausedValue = data.isPaused === true || data.isPaused === 'true' || data.isPaused === 1;
+const isPlayingValue = data.isPlaying === true || data.isPlaying === 'true' || data.isPlaying === 1;
+
+if (isPausedValue || data.isPlaying === false) {
+    coverWrapper.classList.add('paused');
+    isPlaying = false;
+    stopLocalTimer();
+} else if (isPlayingValue || data.isPaused === false) {
+    coverWrapper.classList.remove('paused');
+    isPlaying = true;
+    startLocalTimer();
+} else if (!localTimerInterval) {
+    isPlaying = true;
+    startLocalTimer();
+}
+
+showWidget();
+
 
 // ========== WebSocket Connection ==========
 const ws = new WebSocket('ws://127.0.0.1:8080/');
@@ -396,6 +533,7 @@ ws.onmessage = function (event) {
         if (data.name === 'MusicUpdate') {
             musicData = data;
         }
+        // ========== Color Extraction ==========
         // 2. Standard Streamer.bot Event (Legacy/Standard)
         else if (data.event && data.event.source === 'Custom' && data.data) {
             const customData = typeof data.data === 'string' ? JSON.parse(data.data) : data.data;
@@ -432,3 +570,74 @@ ws.onclose = function () {
     titleEl.textContent = "Disconnected";
     artistEl.textContent = "Is Streamer.bot running?";
 };
+
+// ========== Color Extraction Helper Functions (Global Scope) ==========
+function getAverageColor(imgEl) {
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    const height = canvas.height = imgEl.naturalHeight || imgEl.height;
+    const width = canvas.width = imgEl.naturalWidth || imgEl.width;
+
+    context.drawImage(imgEl, 0, 0);
+
+    // Sample data (not every pixel for performance)
+    const data = context.getImageData(0, 0, width, height).data;
+    let r = 0, g = 0, b = 0;
+    let count = 0;
+
+    for (let i = 0; i < data.length; i += 4 * 10) { // Sample every 10th pixel
+        r += data[i];
+        g += data[i + 1];
+        b += data[i + 2];
+        count++;
+    }
+
+    r = Math.floor(r / count);
+    g = Math.floor(g / count);
+    b = Math.floor(b / count);
+
+    return { r, g, b };
+}
+
+function rgbToHsl(r, g, b) {
+    r /= 255, g /= 255, b /= 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h, s, l = (max + min) / 2;
+
+    if (max === min) {
+        h = s = 0; // achromatic
+    } else {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+            case g: h = (b - r) / d + 2; break;
+            case b: h = (r - g) / d + 4; break;
+        }
+        h /= 6;
+    }
+
+    return { h: h * 360, s: s * 100, l: l * 100 };
+}
+
+function resetPillColors() {
+    const leftPill = document.getElementById('left-pill');
+    const rightPill = document.getElementById('right-pill');
+    // Default dark semi-transparent
+    const defaultColor = 'rgba(0, 0, 0, 0.65)';
+    if (leftPill) leftPill.style.backgroundColor = defaultColor;
+    if (rightPill) rightPill.style.backgroundColor = defaultColor;
+
+    // Reset to defaults
+    const playtimeEl = document.getElementById('playtime');
+    if (playtimeEl) playtimeEl.style.color = '#3b82f6'; // Default Blue
+
+    const progressPath = document.getElementById('progress-path');
+    if (progressPath) progressPath.style.stroke = '#3b82f6';
+
+    const progressDot = document.getElementById('progress-dot');
+    if (progressDot) {
+        progressDot.style.fill = 'white';
+        progressDot.style.filter = ''; // Reset to CSS default
+    }
+}
