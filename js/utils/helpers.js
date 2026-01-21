@@ -68,3 +68,24 @@ function checkOverflows() {
         }
     });
 }
+
+function resizeWidget() {
+    const wrapper = document.getElementById('widget-wrapper');
+    if (!wrapper) return;
+
+    // Design resolution (reference size)
+    const baseWidth = 600;
+    const baseHeight = 150;
+
+    // Viewport resolution
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+
+    // Calculate scale to fit (contain)
+    const scaleX = vw / baseWidth;
+    const scaleY = vh / baseHeight;
+    const scale = Math.min(scaleX, scaleY) * 0.9; // 0.9 for 90% fill (margin)
+
+    // Apply scale centered
+    wrapper.style.transform = `translate(-50%, -50%) scale(${scale})`;
+}

@@ -17,14 +17,16 @@ body {
 /* ========== Widget Wrapper (Layout Anchor) ========== */
 #widget-wrapper {
     position: fixed;
-    top: 50px;
+    top: 50%;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translate(-50%, -50%);
+    /* Base transform */
     width: auto;
     height: auto;
     z-index: 100;
     opacity: 1;
-    transition: opacity 0.8s ease, transform 0.8s ease;
+    transition: opacity 0.8s ease;
+    /* Removing transform transition to avoid conflict with resize logic */
 }
 
 #widget-wrapper.hidden {
