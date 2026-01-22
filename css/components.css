@@ -78,7 +78,13 @@
 
 /* Dynamic Glow in Compact Mode (using variable from UI.js) */
 #center-cover.compact #cover {
-    box-shadow: 0 0 25px var(--album-glow-color, rgba(0, 0, 0, 0.5));
+    /* Triple shadow for MAXIMUM intensity */
+    box-shadow: 0 0 15px var(--album-glow-color, rgba(0, 0, 0, 0.9)),
+        /* Core (Bright) */
+        0 0 30px var(--album-glow-color, rgba(0, 0, 0, 0.7)),
+        /* Mid (Strong) */
+        0 0 60px var(--album-glow-color, rgba(0, 0, 0, 0.5));
+    /* Outer (Soft) */
 }
 
 #cover.spinning {
@@ -87,6 +93,9 @@
 
 #cover.paused {
     animation-play-state: paused;
+}
+
+#cover.paused.grayscale {
     filter: grayscale(100%) brightness(0.7);
 }
 
@@ -170,6 +179,18 @@
     overflow: hidden;
 }
 
+/* NO COVER MODE: Separate pills nicely */
+.no-cover #left-pill {
+    border-radius: 32px !important;
+    padding-right: 22px !important;
+    /* Standard padding */
+    margin-right: 6px;
+    /* Create gap */
+    border-right: none;
+    /* Keep clean */
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35), inset 0 0 20px rgba(255, 255, 255, 0.05), 0 10px 40px rgba(0, 0, 0, 0.4);
+}
+
 #right-pill {
     border-radius: 0 32px 32px 0;
     padding-left: 50px;
@@ -180,6 +201,18 @@
     align-items: flex-start;
     border-left: none;
     overflow: hidden;
+}
+
+/* NO COVER MODE: Separate pills nicely */
+.no-cover #right-pill {
+    border-radius: 32px !important;
+    padding-left: 22px !important;
+    /* Standard padding */
+    margin-left: 6px;
+    /* Create gap */
+    border-left: none;
+    /* Keep clean */
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35), inset 0 0 20px rgba(255, 255, 255, 0.05), 0 10px 40px rgba(0, 0, 0, 0.4);
 }
 
 /* Progress Ring */

@@ -17,6 +17,7 @@ const progressRing = document.getElementById('progress-ring');
 
 const leftPill = document.getElementById('left-pill');
 const rightPill = document.getElementById('right-pill');
+const centerCover = document.getElementById('center-cover');
 
 // FX Elements
 const particleContainer = document.getElementById('particle-container');

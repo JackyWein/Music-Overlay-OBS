@@ -13,6 +13,16 @@ Ein schönes, animiertes Musik-Overlay für deine Streams! Zeigt den aktuell spi
 
 ---
 
+## 📸 Preview
+
+Hier siehst du, wie das Overlay in verschiedenen Situationen aussieht:
+
+| **Full UI (Playing)** | **Compact UI (Idle)** | **Paused** |
+|:---:|:---:|:---:|
+| ![Playing](preview_playing.png) | ![Compact](preview_compact.png) | ![Paused](preview_paused.png) |
+
+---
+
 ## 🚀 Quick Start
 
 ### Schritt 1: Musik-App wählen

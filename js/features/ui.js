@@ -13,10 +13,21 @@ function showWidget() {
     widgetWrapper.classList.add('visible');
 
     // Force exit compact mode when reappearing
+    // Force exit compact mode when reappearing
     if (leftPill) leftPill.classList.remove('retracted');
     if (rightPill) rightPill.classList.remove('retracted');
-    const centerCover = document.getElementById('center-cover');
-    if (centerCover) centerCover.classList.remove('compact');
+
+    // Cover Visibility Logic
+    if (typeof SHOW_COVER !== 'undefined' && SHOW_COVER === false) {
+        if (centerCover) centerCover.style.display = 'none';
+        if (widgetWrapper) widgetWrapper.classList.add('no-cover');
+    } else {
+        if (centerCover) {
+            centerCover.style.display = '';
+            centerCover.classList.remove('compact');
+        }
+        if (widgetWrapper) widgetWrapper.classList.remove('no-cover');
+    }
 
     resetPillAutoHide(); // Restart hide timer
 
@@ -26,36 +37,61 @@ function showWidget() {
 }
 
 function resetPillAutoHide() {
-    // console.log("resetPillAutoHide called"); 
-    if (state.pillHideTimer) clearTimeout(state.pillHideTimer);
-    if (state.fullHideTimer) clearTimeout(state.fullHideTimer);
-
-    state.pillHideTimer = setTimeout(() => {
-        if (leftPill && rightPill) {
-            leftPill.classList.add('retracted');
-            rightPill.classList.add('retracted');
-
-            // Enable compact mode
-            const centerCover = document.getElementById('center-cover');
-            if (centerCover) {
-                centerCover.classList.add('compact');
-
-                // Set album glow color from cover
-                if (coverImg && coverImg.complete && coverImg.naturalWidth > 0) {
-                    try {
-                        const avgColor = getAverageColor(coverImg);
-                        const glowColor = `rgba(${avgColor.r}, ${avgColor.g}, ${avgColor.b}, 0.6)`;
-                        centerCover.style.setProperty('--album-glow-color', glowColor);
-                    } catch (e) { /* Use default */ }
-                }
-            }
-
-            // Start full hide timer if AUTO_HIDE_WHILE_PLAYING is enabled
-            if (typeof AUTO_HIDE_WHILE_PLAYING !== 'undefined' && AUTO_HIDE_WHILE_PLAYING === true) {
-                startFullHideWhilePlayingTimer();
-            }
+    // Falls Config sagt "Nein", gar nicht erst anzeigen
+    if (typeof SHOW_LEFT_PILL !== 'undefined' && SHOW_LEFT_PILL === false) {
+        if (leftPill) leftPill.style.display = 'none';
+    } else {
+        if (leftPill) {
+            leftPill.style.display = ''; // Reset display
+            leftPill.classList.remove('retracted');
         }
-    }, AUTO_HIDE_DURATION);
+    }
+
+    if (typeof SHOW_RIGHT_PILL !== 'undefined' && SHOW_RIGHT_PILL === false) {
+        if (rightPill) rightPill.style.display = 'none';
+    } else {
+        if (rightPill) {
+            rightPill.style.display = ''; // Reset display
+            rightPill.classList.remove('retracted');
+        }
+    }
+
+    // Clear existing timer
+    if (state.pillHideTimeout) clearTimeout(state.pillHideTimeout);
+
+    // Disable Compact Mode if Cover is hidden (User Request)
+    if (typeof SHOW_COVER !== 'undefined' && SHOW_COVER === false) {
+        // If we want to support AUTO_HIDE_WHILE_PLAYING without compact mode, we would trigger it here directly.
+        // For now, "it should just not work anymore" implies pills stay open.
+        // But we still honor AUTO_HIDE_WHILE_PLAYING if checked
+        if (typeof AUTO_HIDE_WHILE_PLAYING !== 'undefined' && AUTO_HIDE_WHILE_PLAYING === true) {
+            startFullHideWhilePlayingTimer();
+        }
+        return;
+    }
+
+    // Only set timer if at least one pill is allowed
+    const leftAllowed = typeof SHOW_LEFT_PILL === 'undefined' || SHOW_LEFT_PILL === true;
+    const rightAllowed = typeof SHOW_RIGHT_PILL === 'undefined' || SHOW_RIGHT_PILL === true;
+
+    if (!leftAllowed && !rightAllowed) return; // Nothing to hide
+
+    state.pillHideTimeout = setTimeout(() => {
+        // Only retract if allowed to show
+        if (leftAllowed && leftPill) leftPill.classList.add('retracted');
+        if (rightAllowed && rightPill) rightPill.classList.add('retracted');
+
+        // Compact mode for cover only if it's the only thing left
+        if (centerCover) centerCover.classList.add('compact');
+
+        // Start full hide timer if AUTO_HIDE_WHILE_PLAYING is enabled
+        if (typeof AUTO_HIDE_WHILE_PLAYING !== 'undefined' && AUTO_HIDE_WHILE_PLAYING === true) {
+            startFullHideWhilePlayingTimer();
+        }
+    }, typeof AUTO_HIDE_DURATION !== 'undefined' ? AUTO_HIDE_DURATION : 10000);
+
+    // Ensure cover is NOT compact initially (unless forced elsewhere)
+    if (centerCover) centerCover.classList.remove('compact');
 }
 
 // Timer für komplettes Verstecken während Musik läuft
@@ -215,64 +251,93 @@ function updateWidget(data) {
 function updateContent(data) {
     let imageLoadPromise = Promise.resolve();
 
-    // Cover
-    if (data.cover && data.cover.startsWith('http')) {
-        if (coverImg.src !== data.cover) {
-            imageLoadPromise = new Promise((resolve) => {
-                coverImg.crossOrigin = "Anonymous";
-                coverImg.onload = function () {
-                    try {
-                        const dominantColor = getAverageColor(coverImg);
-                        const bgColor = `rgba(${dominantColor.r}, ${dominantColor.g}, ${dominantColor.b}, 0.65)`;
-                        if (leftPill) leftPill.style.backgroundColor = bgColor;
-                        if (rightPill) rightPill.style.backgroundColor = bgColor;
+    // Cover Logic with SHOW_COVER Config
+    const isCoverEnabled = typeof SHOW_COVER === 'undefined' || SHOW_COVER === true;
 
-                        // Set global glow color variable
-                        const glowColor = `rgba(${dominantColor.r}, ${dominantColor.g}, ${dominantColor.b}, 0.7)`;
-                        const centerCover = document.getElementById('center-cover');
-                        if (centerCover) centerCover.style.setProperty('--album-glow-color', glowColor);
+    if (isCoverEnabled) {
+        if (data.cover && data.cover.startsWith('http')) {
+            if (coverImg.src !== data.cover) {
+                imageLoadPromise = new Promise((resolve) => {
+                    coverImg.crossOrigin = "Anonymous";
+                    coverImg.onload = function () {
+                        try {
+                            const dominantColor = getAverageColor(coverImg);
 
-                        const hsl = rgbToHsl(dominantColor.r, dominantColor.g, dominantColor.b);
-                        const compHue = (hsl.h + 180) % 360;
-                        const compColor = `hsl(${compHue}, 100%, 75%)`;
+                            // 1. Glow
+                            const glowColor = `rgba(${dominantColor.r}, ${dominantColor.g}, ${dominantColor.b}, 0.6)`;
+                            if (typeof ENABLE_GLOW_EFFECTS === 'undefined' || ENABLE_GLOW_EFFECTS === true) {
+                                centerCover.style.setProperty('--album-glow-color', glowColor);
+                            } else {
+                                centerCover.style.setProperty('--album-glow-color', 'transparent');
+                            }
 
-                        if (playtimeEl) playtimeEl.style.color = compColor;
-                        const progressPath = document.getElementById('progress-path');
-                        if (progressPath) progressPath.style.stroke = compColor;
-                        const progressDot = document.getElementById('progress-dot');
-                        if (progressDot) {
-                            progressDot.style.fill = compColor;
-                            progressDot.style.filter = `drop-shadow(0 0 8px ${compColor})`;
-                        }
+                            // 2. Pill Backgrounds
+                            const bgColor = `rgba(${dominantColor.r}, ${dominantColor.g}, ${dominantColor.b}, 0.65)`;
+                            if (leftPill) leftPill.style.backgroundColor = bgColor;
+                            if (rightPill) rightPill.style.backgroundColor = bgColor;
 
-                        // Color the Equalizer Bars (Album Color)
-                        const eqColor = `rgb(${dominantColor.r}, ${dominantColor.g}, ${dominantColor.b})`;
-                        const eqBars = document.querySelectorAll('.eq-bar');
-                        eqBars.forEach(bar => {
-                            bar.style.backgroundColor = eqColor;
-                            bar.style.boxShadow = `0 0 5px ${eqColor}`;
-                        });
-                    } catch (e) { resetPillColors(); }
-                    resolve();
-                };
-                coverImg.onerror = function () {
-                    resetPillColors();
-                    resolve();
-                };
-                // Set src trigger load
-                coverImg.src = data.cover;
+                            // 3. Text/Accents (Complementary HSL)
+                            const hsl = rgbToHsl(dominantColor.r, dominantColor.g, dominantColor.b);
+                            const compHue = (hsl.h + 180) % 360;
+                            const compColor = `hsl(${compHue}, 100%, 75%)`;
+
+                            if (playtimeEl) playtimeEl.style.color = compColor;
+                            const progressPath = document.getElementById('progress-path');
+                            if (progressPath) progressPath.style.stroke = compColor;
+                            const progressDot = document.getElementById('progress-dot');
+                            if (progressDot) {
+                                progressDot.style.fill = compColor;
+                                progressDot.style.filter = `drop-shadow(0 0 8px ${compColor})`;
+                            }
+
+                            // 4. Equalizer
+                            const eqColor = `rgb(${dominantColor.r}, ${dominantColor.g}, ${dominantColor.b})`;
+                            const eqBars = document.querySelectorAll('.eq-bar');
+                            eqBars.forEach(bar => {
+                                bar.style.backgroundColor = eqColor;
+                                bar.style.boxShadow = `0 0 5px ${eqColor}`;
+                            });
+
+                        } catch (e) { resetPillColors(); }
+                        resolve();
+                    };
+                    coverImg.onerror = function () {
+                        resetPillColors();
+                        resolve();
+                    };
+                    coverImg.src = data.cover;
+                });
+            }
+            coverImg.style.display = 'block';
+            coverPlaceholder.style.display = 'none';
+        } else {
+            // No Cover URL - Show Placeholder IF enabled
+            if (typeof KEEP_LAST_COVER_ON_STOP !== 'undefined' && KEEP_LAST_COVER_ON_STOP === true && coverImg.src && coverImg.src !== '') {
+                // Keep existing cover
                 coverImg.style.display = 'block';
                 coverPlaceholder.style.display = 'none';
-            });
+            } else {
+                coverImg.style.display = 'none';
+                coverPlaceholder.style.display = 'block';
+                resetPillColors();
+            }
         }
+
+        // Ensure container is visible
+        if (centerCover) centerCover.style.display = '';
+        if (widgetWrapper) widgetWrapper.classList.remove('no-cover');
+
     } else {
+        // COVER DISABLED via Config
         coverImg.style.display = 'none';
-        coverPlaceholder.style.display = 'block';
+        coverPlaceholder.style.display = 'none';
+        if (centerCover) centerCover.style.display = 'none';
+        if (widgetWrapper) widgetWrapper.classList.add('no-cover');
         resetPillColors();
     }
 
     // Title
-    const newTitle = data.title || 'Unknown Title';
+    const newTitle = data.title || (typeof DEFAULT_TITLE !== 'undefined' ? DEFAULT_TITLE : 'Unknown Title');
     const liveTitleEl = document.getElementById('title'); // Get fresh reference
     const currentTitleText = liveTitleEl ? liveTitleEl.textContent : '';
 
@@ -286,22 +351,39 @@ function updateContent(data) {
             titleMarquee.innerHTML = `<span id="title" data-full-text="${newTitle}">${newTitle}</span>`;
         }
 
+        // Apply Configurable Scroll Speed
+        if (typeof SCROLL_SPEED_TITLE !== 'undefined' && titleMarquee) {
+            titleMarquee.style.animationDuration = `${SCROLL_SPEED_TITLE}s`;
+        }
+
         // Trigger marquee check logic
         if (!state.isAnimating) setTimeout(checkOverflows, 50);
     }
 
     // Artist
-    const newArtist = data.artist || 'Unknown Artist';
+    const newArtist = data.artist || (typeof DEFAULT_ARTIST !== 'undefined' ? DEFAULT_ARTIST : 'Unknown Artist');
     if (artistEl.textContent !== newArtist) {
         artistEl.textContent = newArtist;
+
+        // Apply Configurable Scroll Speed
+        if (typeof SCROLL_SPEED_ARTIST !== 'undefined' && artistMarquee) {
+            artistMarquee.style.animationDuration = `${SCROLL_SPEED_ARTIST}s`;
+        }
+
         if (!state.isAnimating) setTimeout(checkOverflows, 50);
     }
 
     // Album
     // Fallback for debugging - helps user see if data is missing or UI is broken
-    const newAlbum = data.album || 'Unknown Album';
+    const newAlbum = data.album || (typeof DEFAULT_ALBUM !== 'undefined' ? DEFAULT_ALBUM : 'Unknown Album');
     if (albumEl.textContent !== newAlbum) {
         albumEl.textContent = newAlbum;
+
+        // Apply Configurable Scroll Speed
+        if (typeof SCROLL_SPEED_ALBUM !== 'undefined' && albumMarquee) {
+            albumMarquee.style.animationDuration = `${SCROLL_SPEED_ALBUM}s`;
+        }
+
         if (!state.isAnimating) setTimeout(checkOverflows, 50);
     }
 
@@ -371,6 +453,14 @@ function updateContent(data) {
         if (!state.isPlaying) {
             // PAUSED
             coverImg.classList.add('paused');
+
+            // Check Config for Grayscale
+            if (typeof GRAYSCALE_ON_PAUSE !== 'undefined' && GRAYSCALE_ON_PAUSE === true) {
+                coverImg.classList.add('grayscale');
+            } else {
+                coverImg.classList.remove('grayscale');
+            }
+
             if (centerCover) centerCover.classList.add('paused');
 
             // Stop timer if running
@@ -382,6 +472,7 @@ function updateContent(data) {
         } else {
             // PLAYING
             coverImg.classList.remove('paused');
+            coverImg.classList.remove('grayscale');
             if (centerCover) centerCover.classList.remove('paused');
 
             // Start timer if not running
@@ -397,10 +488,24 @@ function updateContent(data) {
             // 2. ODER es ist ein Command (z.B. Twitch !song)
             const isCommand = data.trigger === 'command';
 
-            if (state.isWidgetHidden) {
-                if (isResuming || isCommand) {
-                    showWidgetWithEntry();
-                    console.log("Widget waking up (Resume or Command)");
+            // Only interfere with visibility triggers if NOT currently animating
+            if (!state.isAnimating) {
+                if (isCommand) {
+                    // COMMAND: Always wake up and expand
+                    if (state.isWidgetHidden && !state.isForcedHidden) {
+                        showWidgetWithEntry();
+                        console.log("Widget waking up (Command)");
+                    } else {
+                        resetPillAutoHide(); // Expand pills
+                        console.log("Expanding pills (Command)");
+                    }
+                } else if (isResuming) {
+                    // RESUME: Only wake up if HIDDEN. If Compact, STAY Compact.
+                    if (state.isWidgetHidden && !state.isForcedHidden) {
+                        showWidgetWithEntry();
+                        console.log("Widget waking up (Resume from Hidden)");
+                    }
+                    // Else: Do nothing (preserve compact state)
                 }
             }
         }

@@ -16,7 +16,7 @@ const MUSIC_SOURCE = 'auto';
 // ============================================
 // Dein Twitch Kanal-Name (ohne #) für !song Befehl
 // Leer lassen = Twitch Chat deaktiviert
-const TWITCH_CHANNEL = 'Pg_jack_lp';  // z.B. 'dein_username'
+const TWITCH_CHANNEL = '';  // z.B. 'dein_username'
 
 // Befehle die das Widget aufwecken (case-insensitive)
 // Standard: !song, !music, !np, !nowplaying
@@ -94,8 +94,51 @@ const ALLOWED_ANIMATIONS = [
     // ... hier deine Favoriten eintragen
 ];
 
+// ============================================
+// ANPASSUNG & PERSONALISIERUNG
+// ============================================
+// Geschwindigkeit der Text-Laufschrift (in Sekunden)
+// Kleinerer Wert = Schneller, Größerer Wert = Langsamer
+const SCROLL_SPEED_TITLE = 12;
+const SCROLL_SPEED_ARTIST = 15;
+const SCROLL_SPEED_ALBUM = 10;
+
+// Standard-Text wenn keine Musik läuft oder keine Infos da sind
+const DEFAULT_TITLE = 'Warte auf Musik...';
+const DEFAULT_ARTIST = '';
+const DEFAULT_ALBUM = '';
+
+// Cover-Bild im "Pause"-Modus grau anzeigen?
+// true = Cover wird grau und dunkel (Standard)
+// false = Cover bleibt farbig (nur Animation stoppt)
+const GRAYSCALE_ON_PAUSE = true;
+
+// Leucht-Effekte (Glow) aktivieren?
+// Deaktivieren für mehr Performance auf langsamen PCs
+const ENABLE_GLOW_EFFECTS = true;
+
+// ============================================
+// LAYOUT & SICHTBARKEIT
+// ============================================
+// Album-Cover (in der Mitte) anzeigen?
+// true = Cover wird angezeigt (Standard)
+// false = Cover ausgeblendet (Pillen rücken zusammen)
+const SHOW_COVER = true;
+
+// Linke Pille (Zeit / Album) anzeigen?
+const SHOW_LEFT_PILL = true;
+
+// Rechte Pille (Titel / Artist) anzeigen?
+const SHOW_RIGHT_PILL = true;
+
+// ============================================
+// FORTSCHRITTS-ANZEIGE
+// ============================================
 // Progress Bar (Ring um das Cover) anzeigen?
 const SHOW_PROGRESS_RING = true;
+
+// Zeitleiste (z.B. 1:23 / 3:45) anzeigen?
+const SHOW_TIME_DISPLAY = true;
 
 // ============================================
 // DEBUG-MODUS
