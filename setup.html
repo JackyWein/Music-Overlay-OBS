@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Overlay Setup</title>
+    <style>
+        :root {
+            --primary: #1DB954;
+            --bg: #121212;
+            --card: #181818;
+            --text: #fff;
+            --text-sec: #b3b3b3;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background: var(--card);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        p {
+            color: var(--text-sec);
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            background: #282828;
+            border: 1px solid #333;
+            color: white;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px;
+            width: 100%;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .btn:hover {
+            transform: scale(1.02);
+            filter: brightness(1.1);
+        }
+
+        .redirect-box {
+            background: #222;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.9em;
+            word-break: break-all;
+            margin: 10px 0 30px;
+            cursor: pointer;
+            border: 1px dashed #444;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .success {
+            color: var(--primary);
+            font-size: 1.2em;
+            margin-top: 20px;
+        }
+
+        .error {
+            color: #e74c3c;
+            margin-top: 10px;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            background: #222;
+            border-radius: 50px;
+            padding: 5px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 50px;
+            color: var(--text-sec);
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .tab.active {
+            background: var(--primary);
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab('spotify')">Spotify (Native)</div>
+        <div class="tab" onclick="switchTab('lastfm')">Last.fm (Alternative)</div>
+    </div>
+
+    <!-- SPOTIFY SECTION -->
+    <div class="container" id="spotify-section">
+        <div id="step-1">
+            <h1>Spotify Setup</h1>
+            <p>Recommended method. Requires Spotify App creation.</p>
+
+            <div
+                style="text-align: left; margin-bottom: 20px; font-size: 0.9em; color: var(--text-sec); background: #222; padding: 15px; border-radius: 8px; border: 1px solid #333;">
+                <strong style="color:white; display:block; margin-bottom:5px;">1. Configure Spotify App</strong>
+                Go to <a href="https://developer.spotify.com/dashboard" target="_blank"
+                    style="color:var(--primary)">Spotify
+                    Developer Dashboard</a>, create an app, and add this exact <b>Redirect URI</b> in settings:
+                <div class="redirect-box" id="redirect-uri" onclick="copyUri()">http://localhost:8888/callback</div>
+
+                <strong style="color:white; display:block; margin-bottom:5px; margin-top:15px;">2. Enter
+                    Credentials</strong>
+                Copy <b>Client ID</b> and <b>Client Secret</b> from your app:
+            </div>
+
+            <input type="text" id="client-id" placeholder="Paste Client ID">
+            <input type="text" id="client-secret" placeholder="Paste Client Secret">
+
+            <button class="btn" onclick="startAuth()">Start Login</button>
+            <div id="error-msg" class="error"></div>
+        </div>
+
+        <div class="container hidden" id="step-2">
+            <h1>Final Step</h1>
+            <p>A new window has opened. Log in to Spotify there.</p>
+
+            <div
+                style="text-align: left; margin-bottom: 20px; font-size: 0.9em; color: var(--text-sec); background: #222; padding: 15px; border-radius: 8px; border: 1px solid #333;">
+                <strong style="color:white; display:block; margin-bottom:5px;">What happens next?</strong>
+                1. New window opens -> <b>Log in</b> to Spotify.<br>
+                2. After login, you will see a page saying <b style="color:#e74c3c">"This site can't be reached"</b>
+                (Connection Refused).<br>
+                3. <b>Copy the URL of that Error Page!</b><br>
+                4. Paste it below.
+
+                <strong style="color: var(--primary)">This is normal!</strong><br>
+                Copy the <b>entire address (URL)</b> from that "broken" page and paste it below:
+            </div>
+
+            <input type="text" id="pasted-url"
+                placeholder="Paste the http://localhost:8888/callback...?code=... URL here">
+            <button class="btn" onclick="finishAuth()">Verify & Connect</button>
+            <div id="error-msg-2" class="error"></div>
+        </div>
+
+        <div class="container hidden" id="step-success">
+            <h1 style="color: var(--primary)">Success! 🎉</h1>
+            <p>The overlay is now connected to your Spotify account.</p>
+            <p>You can close this page and open <b>index.html</b> in OBS.</p>
+        </div>
+
+    </div> <!-- End Spotify Section -->
+
+    <!-- LAST.FM SECTION -->
+    <div class="container hidden" id="lastfm-section">
+        <h1>Last.fm Setup</h1>
+        <p>Alternative method. Useful if Spotify blocks app creation.</p>
+
+        <div
+            style="text-align: left; margin-bottom: 20px; font-size: 0.9em; color: var(--text-sec); background: #222; padding: 15px; border-radius: 8px; border: 1px solid #333;">
+            <strong style="color:white; display:block; margin-bottom:5px;">Check Compatibility:</strong>
+            Works with Spotify, Apple Music, YouTube, and more.<br>
+            <br>
+            <strong style="color:white; display:block; margin-bottom:5px;">How to get an API Key:</strong>
+            1. Go to <a href="https://www.last.fm/api/account/create" target="_blank"
+                style="color:var(--primary)">Last.fm API Account</a>.<br>
+            2. Log in or create an account.<br>
+            3. Fill in:
+            <ul style="margin-top:5px; margin-bottom:5px;">
+                <li><b>Application Name:</b> My Music Overlay</li>
+                <li><b>Description:</b> Personal Overlay</li>
+            </ul>
+            4. Click Submit and copy the <b>API Key</b> (NOT Shared Secret).
+        </div>
+
+        <input type="text" id="lastfm-user" placeholder="Your Last.fm Username">
+        <input type="text" id="lastfm-apikey" placeholder="Paste API Key">
+
+        <button class="btn" style="background: #ba0000;" onclick="saveLastFm()">Save Last.fm Config</button>
+        <div id="lastfm-msg" class="success hidden">Saved! Reload the overlay.</div>
+    </div>
+
+    <!-- LAST.FM SECTION -->
+    <div class="container hidden" id="lastfm-section">
+        <h1>Last.fm Setup</h1>
+        <p>Alternative method. Useful if Spotify blocks app creation.</p>
+
+        <div
+            style="text-align: left; margin-bottom: 20px; font-size: 0.9em; color: var(--text-sec); background: #222; padding: 15px; border-radius: 8px; border: 1px solid #333;">
+            <strong style="color:white; display:block; margin-bottom:5px;">How to get an API Key:</strong>
+            1. Go to <a href="https://www.last.fm/api/account/create" target="_blank"
+                style="color:var(--primary)">Last.fm API Account</a>.<br>
+            2. Fill in:
+            <ul>
+                <li><b>App Name:</b> My Music Overlay</li>
+                <li><b>Description:</b> Personal Overlay</li>
+            </ul>
+            3. Click Submit and copy the <b>API Key</b> (NOT Shared Secret).
+        </div>
+
+        <input type="text" id="lastfm-user" placeholder="Your Last.fm Username">
+        <input type="text" id="lastfm-apikey" placeholder="Paste API Key">
+
+        <button class="btn" style="background: #ba0000;" onclick="saveLastFm()">Save Last.fm Config</button>
+        <div id="lastfm-msg" class="success hidden">Saved! Reload the overlay.</div>
+    </div>
+
+    <script>
+        // Fixed Redirect URI that Spotify accepts
+        const REDIRECT_URI = 'http://127.0.0.1:5000/auth';
+        document.getElementById('redirect-uri').textContent = REDIRECT_URI;
+
+        // --- PRE-FILL DATA ---
+        // Spotify
+        if (localStorage.getItem('spotify_client_id')) {
+            document.getElementById('client-id').value = localStorage.getItem('spotify_client_id');
+        }
+        if (localStorage.getItem('spotify_client_secret')) {
+            document.getElementById('client-secret').value = localStorage.getItem('spotify_client_secret');
+        }
+        // Last.fm
+        if (localStorage.getItem('lastfm_username')) {
+            document.getElementById('lastfm-user').value = localStorage.getItem('lastfm_username');
+        }
+        if (localStorage.getItem('lastfm_api_key')) {
+            document.getElementById('lastfm-apikey').value = localStorage.getItem('lastfm_api_key');
+        }
+
+        // --- TABS LOGIC ---
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            // Find the clicked element via event bubbling or direct selection
+            if (event && event.target) {
+                event.target.classList.add('active');
+            } else {
+                // Fallback if called programmatically
+                const clickedTab = Array.from(document.querySelectorAll('.tab')).find(t => t.textContent.toLowerCase().includes(tab));
+                if (clickedTab) clickedTab.classList.add('active');
+            }
+
+            if (tab === 'spotify') {
+                document.getElementById('spotify-section').classList.remove('hidden');
+                document.getElementById('lastfm-section').classList.add('hidden');
+            } else {
+                document.getElementById('spotify-section').classList.add('hidden');
+                document.getElementById('lastfm-section').classList.remove('hidden');
+            }
+        }
+
+        // --- LAST.FM LOGIC ---
+        function saveLastFm() {
+            const user = document.getElementById('lastfm-user').value.trim();
+            const key = document.getElementById('lastfm-apikey').value.trim();
+
+            if (!user || !key) {
+                alert('Please enter both Username and API Key.');
+                return;
+            }
+
+            localStorage.setItem('lastfm_username', user);
+            localStorage.setItem('lastfm_api_key', key);
+
+            // Clear Spotify Token to ensure fallback kicks in
+            localStorage.removeItem('spotify_refresh_token');
+
+            const msg = document.getElementById('lastfm-msg');
+            msg.textContent = 'Saved! Please restart the overlay (index.html).';
+            msg.classList.remove('hidden');
+        }
+
+        // --- SPOTIFY LOGIC ---
+        function copyUri() {
+            navigator.clipboard.writeText(REDIRECT_URI);
+            alert('Redirect URI copied to clipboard!');
+        }
+
+        function startAuth() {
+            const clientId = document.getElementById('client-id').value.trim();
+            const clientSecret = document.getElementById('client-secret').value.trim();
+
+            if (!clientId || !clientSecret) {
+                showError('Please enter both Client ID and Client Secret.');
+                return;
+            }
+
+            // Save credentials
+            localStorage.setItem('temp_spotify_client_id', clientId);
+            localStorage.setItem('temp_spotify_client_secret', clientSecret);
+
+            const scope = 'user-read-playback-state user-read-currently-playing user-read-private';
+            const state = generateRandomString(16);
+
+            let url = 'https://accounts.spotify.com/authorize';
+            url += '?response_type=code';
+            url += '&client_id=' + encodeURIComponent(clientId);
+            url += '&scope=' + encodeURIComponent(scope);
+            url += '&redirect_uri=' + encodeURIComponent(REDIRECT_URI);
+            url += '&state=' + encodeURIComponent(state);
+
+            // Open in new window
+            window.open(url, 'spotify_login', 'width=600,height=800');
+
+            // Switch UI
+            document.getElementById('step-1').classList.add('hidden');
+            document.getElementById('step-2').classList.remove('hidden');
+        }
+
+        async function finishAuth() {
+            const rawUrl = document.getElementById('pasted-url').value.trim();
+            if (rawUrl.includes('accounts.spotify.com') || rawUrl.includes('authorize')) {
+                showError2('⛔ You pasted the LOGIN PAGE URL! Please login to Spotify, wait for the page to break ("Connection Refused"), then copy THAT url.');
+                return;
+            }
+
+            if (!rawUrl.includes('code=')) {
+                showError2('Invalid URL. It must contain "code=". Did you copy the URL from the broken page?');
+                return;
+            }
+
+            // Extract code
+            let code = '';
+            try {
+                const urlObj = new URL(rawUrl);
+                code = urlObj.searchParams.get('code');
+            } catch (e) {
+                // Fallback regex
+                const match = rawUrl.match(/code=([^&]*)/);
+                if (match) code = match[1];
+            }
+
+            if (!code) {
+                showError2('Could not find authentication code in URL.');
+                return;
+            }
+
+            const clientId = localStorage.getItem('temp_spotify_client_id');
+            const clientSecret = localStorage.getItem('temp_spotify_client_secret');
+
+            try {
+                document.getElementById('step-2').innerHTML = '<h2>Connecting...</h2><p>Exchanging tokens...</p>';
+
+                // Exchange Code for Token
+                const response = await fetch('https://accounts.spotify.com/api/token', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Authorization': 'Basic ' + btoa(clientId + ':' + clientSecret)
+                    },
+                    body: new URLSearchParams({
+                        grant_type: 'authorization_code',
+                        code: code,
+                        redirect_uri: REDIRECT_URI
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.error) throw new Error(data.error_description || data.error);
+
+                // Save Permanent Credentials
+                localStorage.setItem('spotify_client_id', clientId);
+                localStorage.setItem('spotify_client_secret', clientSecret);
+                localStorage.setItem('spotify_refresh_token', data.refresh_token);
+
+                // Cleanup
+                localStorage.removeItem('temp_spotify_client_id');
+                localStorage.removeItem('temp_spotify_client_secret');
+                localStorage.removeItem('lastfm_api_key'); // Clear LastFM to prioritize Spotify
+
+                // Show Success
+                document.getElementById('step-2').classList.add('hidden');
+                document.getElementById('step-success').classList.remove('hidden');
+
+            } catch (e) {
+                document.getElementById('step-2').innerHTML = `
+                    <h1>Error</h1>
+                    <p class="error">${e.message}</p>
+                    <button class="btn" onclick="location.reload()">Try Again</button>
+                `;
+            }
+        }
+
+        function generateRandomString(length) {
+            let text = '';
+            const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            for (let i = 0; i < length; i++) text += possible.charAt(Math.floor(Math.random() * possible.length));
+            return text;
+        }
+
+        function showError(msg) { document.getElementById('error-msg').textContent = msg; }
+        function showError2(msg) { document.getElementById('error-msg-2').textContent = msg; }
+
+        // Pre-fill
+        const storedId = localStorage.getItem('spotify_client_id');
+        if (storedId) document.getElementById('client-id').value = storedId;
+        const storedSecret = localStorage.getItem('spotify_client_secret');
+        if (storedSecret) document.getElementById('client-secret').value = storedSecret;
+
+    </script>
+</body>
+
+</html>

@@ -53,9 +53,20 @@ function setupProgressRing() {
 function updateProgressRing(progress) {
     if (typeof SHOW_PROGRESS_RING !== 'undefined' && SHOW_PROGRESS_RING === false) return;
 
+    // Last.fm Fix: Hide ring if we have no duration data
+    if (!state.currentDurationMs || state.currentDurationMs <= 0) {
+        if (progressRing) progressRing.style.display = 'none';
+        return;
+    } else {
+        if (progressRing) progressRing.style.display = '';
+    }
+
     const progressPath = document.getElementById('progress-path');
     const progressDot = document.getElementById('progress-dot');
     if (!progressPath) return;
+
+    // Safety check for NaN
+    if (isNaN(progress)) progress = 0;
 
     const radius = 46;
     const center = 70;
@@ -105,8 +116,14 @@ function stopLocalTimer() {
 }
 
 function updateTimeDisplay() {
-    if (playtimeEl)
-        playtimeEl.textContent = `${formatTime(state.currentPositionMs)} / ${formatTime(state.currentDurationMs)}`;
+    if (playtimeEl) {
+        if (!state.currentDurationMs || state.currentDurationMs <= 0) {
+            playtimeEl.style.display = 'none';
+        } else {
+            playtimeEl.style.display = '';
+            playtimeEl.textContent = `${formatTime(state.currentPositionMs)} / ${formatTime(state.currentDurationMs)}`;
+        }
+    }
 }
 
 // ========== Auto-Hide on Pause ==========

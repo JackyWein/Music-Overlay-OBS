@@ -23,30 +23,12 @@ const TwitchChatConnector = {
     connect: function (callback) {
         console.log('[Twitch Chat] Connecting to channel:', TWITCH_CHANNEL);
 
-        // Lade tmi.js dynamisch wenn nicht vorhanden
         if (typeof tmi === 'undefined') {
-            this.loadTmiJs().then(() => {
-                this.createClient(callback);
-            }).catch(err => {
-                console.error('[Twitch Chat] Failed to load tmi.js:', err);
-            });
-        } else {
-            this.createClient(callback);
+            console.error('[Twitch Chat] tmi.js not loaded! Please check index.html');
+            return;
         }
-    },
 
-    // tmi.js laden
-    loadTmiJs: function () {
-        return new Promise((resolve, reject) => {
-            const script = document.createElement('script');
-            script.src = 'https://unpkg.com/tmi.js@1.8.5/dist/tmi.min.js';
-            script.onload = () => {
-                console.log('[Twitch Chat] tmi.js loaded');
-                resolve();
-            };
-            script.onerror = reject;
-            document.head.appendChild(script);
-        });
+        this.createClient(callback);
     },
 
     // TMI Client erstellen
@@ -57,7 +39,7 @@ const TwitchChatConnector = {
                 secure: true,
                 reconnect: true
             },
-            channels: [TWITCH_CHANNEL]
+            channels: [TWITCH_CHANNEL.toLowerCase()]
         });
 
         this.client.on('connected', () => {

@@ -102,6 +102,7 @@ function updateWidget(data) {
             clearTimeout(state.pauseHideTimeout);
             state.pauseHideTimeout = null;
         }
+        return; // EXIT EARLY: Don't process empty song data from command
     }
 
     const currentSongId = newTitle + newArtist;

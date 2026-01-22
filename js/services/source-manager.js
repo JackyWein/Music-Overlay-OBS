@@ -17,7 +17,8 @@ const SourceManager = {
         this.connectors = {
             'youtube-thch': YouTubeMusicThChConnector, // th-ch App (bevorzugt)
             'youtube': YouTubeMusicConnector,          // ytmdesktop.app
-            'spotify': SpotifyConnector,
+            'spotify': SpotifyConnector,               // Native (Preferred)
+            'lastfm': LastFmConnector,                 // Last.fm (Fallback)
             'cider': CiderConnector,                   // Cider (Apple Music)
             'vlc': VLCConnector,                       // VLC Media Player
             'foobar': Foobar2000Connector,             // foobar2000
@@ -43,7 +44,7 @@ const SourceManager = {
                 // Twitch Commands werden separat behandelt
                 if (data.name === 'TwitchCommand') {
                     console.log('[SourceManager] Twitch command received:', data.command, 'from', data.user);
-                    // Widget wird vom TwitchChatConnector selbst aufgeweckt
+                    this.handleMusicData(data);
                 }
             });
             this.twitchConnected = true;
@@ -61,7 +62,7 @@ const SourceManager = {
         this.updateStatus('Suche Musik-Quellen...');
 
         // Reihenfolge: Streaming-Apps zuerst, dann Media Player
-        const sources = ['youtube-thch', 'youtube', 'spotify', 'cider', 'vlc', 'foobar', 'streamerbot'];
+        const sources = ['youtube-thch', 'youtube', 'spotify', 'lastfm', 'cider', 'vlc', 'foobar', 'streamerbot'];
 
         for (const source of sources) {
             console.log(`[SourceManager] Trying ${source}...`);

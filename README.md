@@ -21,7 +21,7 @@ Ein schönes, animiertes Musik-Overlay für deine Streams! Zeigt den aktuell spi
 |--------------|---------------------|
 | **YouTube Music** | [th-ch YouTube Music App](https://github.com/th-ch/youtube-music/releases) (empfohlen) |
 | **YouTube Music** (Alternative) | [YouTube Music Desktop App](https://ytmdesktop.app/) |
-| **Spotify** | [Spicetify](https://spicetify.app/docs/advanced/installation) + [WebNowPlaying](https://github.com/keifufu/WebNowPlaying-Redux-Spicetify) |
+| **Spotify** | **Native Integration** (Start `setup.html`) oder **Last.fm** (Alternative) |
 | **Apple Music** | [Cider](https://cider.sh/) |
 | **VLC Media Player** | [VLC Media Player](https://www.videolan.org/vlc/) |
 | **foobar2000** | [foobar2000](https://www.foobar2000.org/) + [Beefweb](https://github.com/hyperion-project/beefweb) |
@@ -105,36 +105,42 @@ Alternative App von [ytmdesktop.app](https://ytmdesktop.app/).
 
 ---
 
-## 🎧 Spotify Setup
-
-Für Spotify nutzen wir **Spicetify** - ein Tool das Spotify erweitert - zusammen mit der **WebNowPlaying** Extension.
-
-### Spicetify installieren
-
-Öffne **PowerShell als Administrator** und führe aus:
-
-```powershell
-iwr -useb https://raw.githubusercontent.com/spicetify/cli/main/install.ps1 | iex
+```
+✅ Companion Server läuft auf: http://localhost:9863
 ```
 
-Nach der Installation Spotify neu starten.
+---
 
-### WebNowPlaying Extension installieren
+## 🎵 Option 2: Last.fm (Empfohlene Alternative)
 
-```powershell
-spicetify config extensions webnowplaying.js
-spicetify apply
-```
+Da Spotify die Erstellung neuer Developer-Apps pausiert hat, ist **Last.fm** die stabilste Lösung für alle neuen Nutzer.
 
-Spotify wird sich neu starten mit der aktivierten Extension.
+### 1. Account erstellen
+Erstelle einen kostenlosen Account auf [Last.fm](https://www.last.fm/).
 
-```
-✅ WebSocket läuft auf: ws://localhost:8974
-```
+### 2. Spotify verbinden
+Gehe in deine [Last.fm Anwendungen](https://www.last.fm/settings/applications) und klicke auf **"Spotify Scrobbling verbinden"**. Jetzt "hört" Last.fm alles, was du auf Spotify hörst.
 
-### Fertig!
+### 3. API Key holen
+1. Gehe zu: [Last.fm API Account erstellen](https://www.last.fm/api/account/create)
+2. Fülle irgendwas ein (z.B. Name: "Overlay", Beschreibung: "My Overlay").
+3. Klicke Submit.
+4. Kopiere den **"API Key"**.
 
-Öffne das Overlay in OBS und spiele Musik in Spotify ab!
+### 4. Im Overlay eintragen
+1. Öffne die `setup.html` im Overlay-Ordner.
+2. Klicke oben auf den Tab **"Last.fm (Alternative)"**.
+3. Trage deinen **Last.fm Benutzernamen** und den **API Key** ein.
+4. Klicke "Save".
+
+Das Overlay zeigt nun deine Musik von Last.fm an. (Mit ca. 2-3 Sekunden Verzögerung).
+
+
+---
+
+> ℹ️ **Last.fm Hinweise:**
+> - **Zeitleiste & Progress Bar:** Werden ausgeblendet, da Last.fm keine Live-Position liefert.
+> - **Auto-Hide:** Funktioniert auch hier! Sobald Last.fm den Song nicht mehr als "Now Playing" meldet (wenn du stoppst), startet der Timer und das Overlay verschwindet.
 
 ---
 
@@ -276,7 +282,7 @@ Die Konfiguration erfolgt über die Datei `js/config.js`:
 // === MUSIK-QUELLE ===
 // 'youtube-thch' - th-ch YouTube Music App (empfohlen)
 // 'youtube'      - YouTube Music Desktop App (ytmdesktop.app)
-// 'spotify'      - Spicetify + WebNowPlaying
+// 'spotify'      - Native Integration or Last.fm
 // 'vlc'          - VLC Media Player
 // 'foobar'       - foobar2000
 // 'streamerbot'  - Streamerbot WebSocket
@@ -331,7 +337,7 @@ Das Overlay nutzt automatisch die dominante Farbe des Album-Covers. Für eigene 
 - **Ist deine Musik-App gestartet?**
 - **th-ch App**: Ist der API Server aktiviert? (Plugins → API Server)
 - **YouTube Music Desktop**: Ist der Companion Server aktiviert?
-- **Spotify**: Ist Spicetify korrekt installiert? (`spicetify -v`)
+- **Spotify**: Ist setup.html erfolgreich durchgelaufen?
 - **Streamerbot**: Ist der WebSocket Server auf Port 8080 aktiv?
 
 ### Das Overlay verbindet sich, zeigt aber keine Musik

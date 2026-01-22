@@ -3,7 +3,8 @@
 // ============================================
 // 'youtube-thch' - th-ch YouTube Music App (github.com/th-ch/youtube-music) [EMPFOHLEN]
 // 'youtube'      - YouTube Music Desktop App (ytmdesktop.app)
-// 'spotify'      - Spicetify + WebNowPlaying Extension
+// 'spotify'      - Native Spotify Integration (via setup.html)
+// 'lastfm'       - Last.fm Scrobble Integration Extension
 // 'vlc'          - VLC Media Player (HTTP Interface)
 // 'foobar'       - foobar2000 (Beefweb Plugin)
 // 'streamerbot'  - Streamerbot WebSocket Server
@@ -15,7 +16,7 @@ const MUSIC_SOURCE = 'auto';
 // ============================================
 // Dein Twitch Kanal-Name (ohne #) für !song Befehl
 // Leer lassen = Twitch Chat deaktiviert
-const TWITCH_CHANNEL = '';  // z.B. 'dein_username'
+const TWITCH_CHANNEL = 'Pg_jack_lp';  // z.B. 'dein_username'
 
 // Befehle die das Widget aufwecken (case-insensitive)
 // Standard: !song, !music, !np, !nowplaying
@@ -60,13 +61,13 @@ const RECONNECT_DELAY = 5000;
 // OVERLAY-VERHALTEN
 // ============================================
 // Zeit bis die Pills sich verstecken (in ms) - Compact-Modus
-const AUTO_HIDE_DURATION = 12000;
+const AUTO_HIDE_DURATION = 30000;
 
 // Widget komplett verstecken wenn Musik stoppt/pausiert
 const HIDE_ON_STOP = true;
 
 // Zeit bis das Widget nach Pause/Stop komplett verschwindet (in ms)
-const HIDE_ON_STOP_DELAY = 20000;
+const HIDE_ON_STOP_DELAY = 30000;
 
 // Widget auch verstecken während Musik läuft (erscheint wieder bei !song)
 // Wenn true: Widget verschwindet komplett nach AUTO_HIDE_WHILE_PLAYING_DELAY

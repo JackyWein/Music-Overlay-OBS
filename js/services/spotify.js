@@ -1,190 +1,173 @@
-// Spicetify WebNowPlaying Connector
-// Connects to: ws://localhost:8974/
-// Depends on: config.js
+// Spotify Native Connector (Uses Setup Page Credentials)
+// Manages Token Refresh & Polling via localStorage data
 
 const SpotifyConnector = {
-    ws: null,
+    clientId: null,
+    clientSecret: null,
+    accessToken: null,
+    refreshToken: null,
+    tokenExpiration: 0,
+    pollInterval: null,
     callback: null,
-    reconnectAttempts: 0,
-    maxReconnectAttempts: 5,
-    currentTrack: {},
 
-    // Prüfe ob Spicetify WebNowPlaying läuft
-    checkAvailability: function () {
-        return new Promise((resolve) => {
-            const testWs = new WebSocket(SPOTIFY_WS_URL);
-            const timeout = setTimeout(() => {
-                testWs.close();
-                resolve(false);
-            }, 2000);
-
-            testWs.onopen = () => {
-                clearTimeout(timeout);
-                testWs.close();
-                resolve(true);
-            };
-
-            testWs.onerror = () => {
-                clearTimeout(timeout);
-                resolve(false);
-            };
-        });
+    init: function () {
+        this.clientId = localStorage.getItem('spotify_client_id');
+        this.clientSecret = localStorage.getItem('spotify_client_secret');
+        this.refreshToken = localStorage.getItem('spotify_refresh_token');
     },
 
-    // Verbindung starten
+    checkAvailability: function () {
+        this.init();
+        // Available if we have tokens (Setup was run)
+        return Promise.resolve(!!this.refreshToken);
+    },
+
     connect: function (callback) {
         this.callback = callback;
-        console.log('[Spotify] Connecting to Spicetify WebNowPlaying...');
+        console.log('[Spotify Native] Starting...');
 
-        this.updateStatus('Verbinde mit Spotify...');
-        this.createWebSocket();
-    },
-
-    // WebSocket erstellen
-    createWebSocket: function () {
-        if (this.ws) {
-            this.ws.close();
-        }
-
-        this.ws = new WebSocket(SPOTIFY_WS_URL);
-
-        this.ws.onopen = () => {
-            console.log('[Spotify] Connected to WebNowPlaying');
-            this.reconnectAttempts = 0;
-            this.updateStatus('Mit Spotify verbunden');
-
-            // Request initial state
-            this.ws.send('GETCurrentPlayer');
-        };
-
-        this.ws.onmessage = (event) => {
-            this.handleMessage(event.data);
-        };
-
-        this.ws.onerror = (error) => {
-            console.error('[Spotify] WebSocket error:', error);
-        };
-
-        this.ws.onclose = () => {
-            console.log('[Spotify] WebSocket closed');
-            this.handleDisconnect();
-        };
-    },
-
-    // Nachricht verarbeiten
-    handleMessage: function (message) {
-        // WebNowPlaying sendet Nachrichten im Format: "KEY:VALUE"
-        // Beispiele:
-        // TITLE:Song Name
-        // ARTIST:Artist Name
-        // ALBUM:Album Name
-        // COVER:https://...
-        // STATE:1 (playing) / 0 (paused)
-        // POSITION:123 (seconds)
-        // DURATION:240 (seconds)
-
-        if (!message || typeof message !== 'string') return;
-
-        const colonIndex = message.indexOf(':');
-        if (colonIndex === -1) return;
-
-        const key = message.substring(0, colonIndex).toUpperCase();
-        const value = message.substring(colonIndex + 1);
-
-        switch (key) {
-            case 'TITLE':
-                this.currentTrack.title = value;
-                break;
-            case 'ARTIST':
-                this.currentTrack.artist = value;
-                break;
-            case 'ALBUM':
-                this.currentTrack.album = value;
-                break;
-            case 'COVER':
-                this.currentTrack.cover = value;
-                break;
-            case 'STATE':
-                this.currentTrack.isPlaying = value === '1' || value === 'PLAYING';
-                break;
-            case 'POSITION':
-                this.currentTrack.positionMs = parseFloat(value) * 1000;
-                break;
-            case 'DURATION':
-                this.currentTrack.durationMs = parseFloat(value) * 1000;
-                break;
-            case 'PLAYER':
-                // Vollständiger State empfangen - Update senden
-                this.sendUpdate();
-                return;
-        }
-
-        // Bei jedem Update den aktuellen State senden
-        // (WebNowPlaying sendet Updates für jedes Feld einzeln)
-        this.debounceUpdate();
-    },
-
-    // Debounced Update (sammelt Updates)
-    updateTimeout: null,
-    debounceUpdate: function () {
-        if (this.updateTimeout) {
-            clearTimeout(this.updateTimeout);
-        }
-        this.updateTimeout = setTimeout(() => {
-            this.sendUpdate();
-        }, 100);
-    },
-
-    // Update an Callback senden
-    sendUpdate: function () {
-        const musicData = {
-            name: 'MusicUpdate',
-            source: 'spotify',
-            title: this.currentTrack.title || 'Kein Titel',
-            artist: this.currentTrack.artist || 'Unbekannt',
-            album: this.currentTrack.album || '',
-            cover: this.currentTrack.cover || '',
-            positionMs: this.currentTrack.positionMs || 0,
-            durationMs: this.currentTrack.durationMs || 0,
-            isPlaying: this.currentTrack.isPlaying !== false
-        };
-
-        if (this.callback) {
-            this.callback(musicData);
-        }
-    },
-
-    // Disconnect handling
-    handleDisconnect: function () {
-        if (this.reconnectAttempts < this.maxReconnectAttempts) {
-            this.reconnectAttempts++;
-            console.log(`[Spotify] Reconnecting... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
-            setTimeout(() => this.createWebSocket(), RECONNECT_DELAY);
+        if (this.refreshToken) {
+            this.updateStatus('Reconnecting to Spotify...');
+            this.startPolling();
         } else {
-            console.log('[Spotify] Max reconnect attempts reached');
-            if (typeof SourceManager !== 'undefined') {
-                SourceManager.handleDisconnect('spotify');
+            console.warn('[Spotify Native] No tokens found. Please run setup.html');
+            this.updateStatus('Setup required (run setup.html)');
+        }
+    },
+
+    // --- Token Refresh ---
+    getAccessToken: async function () {
+        if (this.accessToken && Date.now() < this.tokenExpiration) return this.accessToken;
+        if (!this.refreshToken) return null;
+
+        try {
+            const body = new URLSearchParams({
+                grant_type: 'refresh_token',
+                refresh_token: this.refreshToken
+            });
+
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            };
+
+            // Basic Auth (Standard Flow)
+            if (this.clientSecret) {
+                headers['Authorization'] = 'Basic ' + btoa(this.clientId + ':' + this.clientSecret);
+            } else {
+                body.append('client_id', this.clientId);
             }
+
+            const response = await fetch('https://accounts.spotify.com/api/token', {
+                method: 'POST',
+                headers: headers,
+                body: body
+            });
+
+            const data = await response.json();
+
+            if (data.error) {
+                if (data.error === 'invalid_grant') {
+                    console.error('[Spotify Native] Refresh token invalid. Please re-run setup.html');
+                    this.updateStatus('Auth Expired - Run Setup');
+                    localStorage.removeItem('spotify_refresh_token');
+                    this.refreshToken = null;
+                }
+                throw new Error(data.error);
+            }
+
+            this.saveTokens(data);
+            return this.accessToken;
+        } catch (e) {
+            console.error('[Spotify Native] Token Refresh Error:', e);
+            return null;
         }
     },
 
-    // Status-Update für UI
-    updateStatus: function (message) {
-        if (typeof titleEl !== 'undefined' && titleEl) {
-            titleEl.textContent = message;
-        }
-        if (typeof artistEl !== 'undefined' && artistEl) {
-            artistEl.textContent = 'Spotify';
+    saveTokens: function (data) {
+        this.accessToken = data.access_token;
+        this.tokenExpiration = Date.now() + (data.expires_in * 1000) - 10000;
+        if (data.refresh_token) {
+            this.refreshToken = data.refresh_token;
+            localStorage.setItem('spotify_refresh_token', data.refresh_token);
         }
     },
 
-    // Verbindung trennen
+    // --- Polling Logic ---
+    startPolling: function () {
+        if (this.pollInterval) clearInterval(this.pollInterval);
+        this.fetchState();
+        this.pollInterval = setInterval(() => this.fetchState(), 2000); // 2s polling
+    },
+
+    fetchState: async function () {
+        const token = await this.getAccessToken();
+        if (!token) return;
+
+        try {
+            const response = await fetch('https://api.spotify.com/v1/me/player/currently-playing', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (response.status === 204) {
+                this.handleState(null);
+                return;
+            }
+
+            // Handle Fatal Auth Errors
+            if (response.status === 403 || response.status === 401) {
+                console.error('[Spotify Native] Authorization failed (403/401). Stopping service.');
+                this.updateStatus('Auth Failed - Check Setup');
+                this.disconnect(); // Stop polling
+                localStorage.removeItem('spotify_refresh_token'); // Clear invalid token
+                this.refreshToken = null;
+                return;
+            }
+
+            if (response.status === 429) return; // Rate limit
+
+            // Safe JSON parsing
+            const text = await response.text();
+            try {
+                const data = JSON.parse(text);
+                this.handleState(data);
+            } catch (e) {
+                console.warn('[Spotify Native] Received non-JSON response:', text);
+            }
+        } catch (e) {
+            console.error('[Spotify Native] Fetch error:', e);
+        }
+    },
+
+    handleState: function (data) {
+        let musicData = { name: 'MusicUpdate', source: 'spotify', isPlaying: false };
+
+        if (data && data.item) {
+            const track = data.item;
+            const image = track.album.images.find(i => i.width > 200) || track.album.images[0];
+            const artistNames = track.artists.map(a => a.name).join(', ');
+
+            musicData = {
+                name: 'MusicUpdate',
+                source: 'spotify',
+                trigger: 'poll',
+                title: track.name,
+                artist: artistNames,
+                album: track.album.name,
+                cover: image ? image.url : '',
+                positionMs: data.progress_ms,
+                durationMs: track.duration_ms,
+                isPlaying: data.is_playing
+            };
+        }
+
+        if (this.callback) this.callback(musicData);
+    },
+
+    updateStatus: function (msg) {
+        if (typeof titleEl !== 'undefined') titleEl.textContent = msg;
+    },
+
     disconnect: function () {
-        if (this.ws) {
-            this.ws.close();
-            this.ws = null;
-        }
-        this.currentTrack = {};
-        console.log('[Spotify] Disconnected');
+        if (this.pollInterval) clearInterval(this.pollInterval);
     }
 };
