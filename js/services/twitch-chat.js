@@ -87,18 +87,15 @@ const TwitchChatConnector = {
 
     // Widget aufwecken
     wakeUpWidget: function () {
-        // Pills zeigen
-        const leftPill = document.getElementById('left-pill');
-        const rightPill = document.getElementById('right-pill');
-        const centerCover = document.getElementById('center-cover');
-
-        if (leftPill) leftPill.classList.remove('retracted');
-        if (rightPill) rightPill.classList.remove('retracted');
-        if (centerCover) centerCover.classList.remove('compact');
-
-        // Auto-hide Timer zurücksetzen
-        if (typeof resetPillAutoHide === 'function') {
-            resetPillAutoHide();
+        if (typeof window.wakeUpWidget === 'function') {
+            window.wakeUpWidget();
+        } else {
+            console.error('[Twitch Chat] Global wakeUpWidget not found!');
+            // Fallback minimal implementation
+            const leftPill = document.getElementById('left-pill');
+            const rightPill = document.getElementById('right-pill');
+            if (leftPill) leftPill.classList.remove('retracted');
+            if (rightPill) rightPill.classList.remove('retracted');
         }
 
         console.log('[Twitch Chat] Widget woken up by chat command');

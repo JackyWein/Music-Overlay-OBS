@@ -36,6 +36,41 @@ function showWidget() {
     setTimeout(checkOverflows, 200);
 }
 
+// Global helper to wake up widget from compact/hidden state
+// Used by: Twitch Chat !song, Streamer.bot events, and internal logic
+window.wakeUpWidget = function () {
+    console.log('[UI] Waking up widget...');
+
+    // 1. Expand Pills
+    if (typeof leftPill !== 'undefined' && leftPill) leftPill.classList.remove('retracted');
+    if (typeof rightPill !== 'undefined' && rightPill) rightPill.classList.remove('retracted');
+
+    // 2. Expand Cover
+    const centerCover = document.getElementById('center-cover');
+    if (centerCover) centerCover.classList.remove('compact');
+
+    // 3. Reset Auto-Hide Timers
+    if (typeof resetPillAutoHide === 'function') {
+        resetPillAutoHide();
+    }
+
+    // 4. Cancel Pause Hide Timer if active
+    if (state.pauseHideTimeout) {
+        clearTimeout(state.pauseHideTimeout);
+        state.pauseHideTimeout = null;
+    }
+
+    // 5. Ensure Widget Wrapper is visible if it was hidden
+    if (state.isWidgetHidden) {
+        if (typeof showWidgetWithEntry === 'function') {
+            showWidgetWithEntry();
+        } else if (typeof widgetWrapper !== 'undefined') {
+            widgetWrapper.classList.remove('hidden');
+            state.isWidgetHidden = false;
+        }
+    }
+};
+
 function resetPillAutoHide() {
     // Falls Config sagt "Nein", gar nicht erst anzeigen
     if (typeof SHOW_LEFT_PILL !== 'undefined' && SHOW_LEFT_PILL === false) {
@@ -127,16 +162,8 @@ function updateWidget(data) {
 
     // Handle !song command -> Force Wake Up
     if (data.trigger === 'command') {
-        if (leftPill) leftPill.classList.remove('retracted');
-        if (rightPill) rightPill.classList.remove('retracted');
-        const centerCover = document.getElementById('center-cover');
-        if (centerCover) centerCover.classList.remove('compact');
-
-        // Reset hiding timers so it stays visible for a while
-        if (typeof resetPillAutoHide === 'function') resetPillAutoHide();
-        if (state.pauseHideTimeout) {
-            clearTimeout(state.pauseHideTimeout);
-            state.pauseHideTimeout = null;
+        if (typeof wakeUpWidget === 'function') {
+            wakeUpWidget();
         }
         return; // EXIT EARLY: Don't process empty song data from command
     }

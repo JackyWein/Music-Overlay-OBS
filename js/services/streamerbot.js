@@ -83,22 +83,75 @@ const StreamerbotConnector = {
         try {
             const data = JSON.parse(rawData);
 
+            // --- DEBUG LOGGING ---
+            // Uncomment to see every event (noisy!)
+            // console.log('[Streamerbot] Raw Event:', data);
+
+            // --- PARSING HELPER: Handle Stringified Payloads ---
+            // Sometimes data.data from CPH.WebsocketBroadcastJson arrives as a string
+            let payload = data;
+
+            // If data has a 'data' property
+            if (data.data) {
+                // If it's a string, try to parse it
+                if (typeof data.data === 'string') {
+                    try {
+                        payload = JSON.parse(data.data);
+                    } catch (e) {
+                        // If parsing fails, use original data.data (maybe it's just a string message)
+                        payload = data.data;
+                    }
+                } else {
+                    // It's already an object
+                    payload = data.data;
+                }
+            }
+
+            // --- CHECK FOR music_uncompact ---
+            let isUncompact = false;
+
+            // 1. Direct property
+            if (data.event_name === 'music_uncompact' || data.event === 'music_uncompact') isUncompact = true;
+
+            // 2. Property on payload object (most common for CPH Broadcasts)
+            if (payload && (payload.event_name === 'music_uncompact' || payload.event === 'music_uncompact')) isUncompact = true;
+
+            // 3. Nested in 'event' object if source is Custom (Standard SB Custom Event)
+            if (data.event && data.event.source === 'Custom' && payload) {
+                if (payload.event_name === 'music_uncompact' || payload.event === 'music_uncompact') isUncompact = true;
+            }
+
+            // 4. Check for 'trigger: command' in MusicUpdate (C# Broadcast)
+            if (payload && payload.trigger === 'command') isUncompact = true;
+            if (payload && payload.data && payload.data.trigger === 'command') isUncompact = true;
+
+            if (isUncompact) {
+                console.log('[Streamerbot] Received music_uncompact event - Waking up!');
+                if (typeof wakeUpWidget === 'function') {
+                    wakeUpWidget();
+                } else if (typeof window.wakeUpWidget === 'function') {
+                    window.wakeUpWidget();
+                }
+                return;
+            }
+
+            // --- MUSIC DATA PARSING ---
             let musicData = null;
 
-            // Direktes MusicUpdate Event
+            // Scenario A: Direct MusicUpdate (Legacy/Simple)
             if (data.name === 'MusicUpdate' || data.event === 'MusicUpdate') {
                 musicData = data;
             }
-            // Custom Event mit MusicUpdate
-            else if (data.event && data.event.source === 'Custom' && data.data) {
-                const customData = typeof data.data === 'string' ? JSON.parse(data.data) : data.data;
-                if (customData.name === 'MusicUpdate' || customData.event === 'MusicUpdate') {
-                    musicData = customData;
+            // Scenario B: Custom Event (Standard Streamer.bot)
+            else if (data.event && data.event.source === 'Custom') {
+                // Payload was already parsed above!
+                if (payload && (payload.name === 'MusicUpdate' || payload.event === 'MusicUpdate')) {
+                    musicData = payload;
                 }
             }
-            // Nested data
-            else if (data.data && (data.data.name === 'MusicUpdate' || data.data.event === 'MusicUpdate')) {
-                musicData = data.data;
+            // Scenario C: Nested in data (Generic)
+            else if (payload && (payload.name === 'MusicUpdate' || payload.event === 'MusicUpdate')) {
+                musicData = payload;
             }
 
             if (musicData) {

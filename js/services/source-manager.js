@@ -1,4 +1,4 @@
-// Source Manager - Zentraler Manager für alle Musik-Quellen
+// SourceManager - Zentraler Manager für alle Musik-Quellen
 // Depends on: config.js, all connector files
 
 const SourceManager = {

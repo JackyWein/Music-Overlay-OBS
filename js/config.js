@@ -9,7 +9,7 @@
 // 'foobar'       - foobar2000 (Beefweb Plugin)
 // 'streamerbot'  - Streamerbot WebSocket Server
 // 'auto'         - Automatische Erkennung (probiert alle Quellen)
-const MUSIC_SOURCE = 'auto';
+const MUSIC_SOURCE = 'streamerbot';
 
 // ============================================
 // TWITCH CHAT INTEGRATION
@@ -67,7 +67,7 @@ const AUTO_HIDE_DURATION = 30000;
 const HIDE_ON_STOP = true;
 
 // Zeit bis das Widget nach Pause/Stop komplett verschwindet (in ms)
-const HIDE_ON_STOP_DELAY = 30000;
+const HIDE_ON_STOP_DELAY = 60000;
 
 // Widget auch verstecken während Musik läuft (erscheint wieder bei !song)
 // Wenn true: Widget verschwindet komplett nach AUTO_HIDE_WHILE_PLAYING_DELAY
